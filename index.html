@@ -35,6 +35,7 @@
     let currentType = null;
     let currentQuestion = null;
     let correctAnswer = null;
+    let currentVariable = null;
 
     const definitions = [
       {
@@ -112,28 +113,29 @@
         document.getElementById("inputs").innerHTML = `
           <textarea id='student-answer' placeholder='Type your answer here...'></textarea><br>
           <button onclick='checkDefinition()'>Check Answer</button>
-          <button onclick='showModelAnswer()'>Show Model Answer</button>
+          <button onclick='showModelAnswer()'>Give up</button>
         `;
       } else if (currentType === "twoslit") {
         const a = (Math.random() * 0.5 + 0.1) / 1000;
         const x = (Math.random() * 4 + 1) / 1000;
         const d = (Math.random() * 0.5 + 0.5);
         const lambda = (a * x) / d;
-        const variables = ["lambda", "a", "x", "d"];
-        const find = getRandomSelection(variables);
-        correctAnswer = { lambda, a, x, d }[find];
+        const variables = ["λ", "a", "x", "d"];
+        currentVariable = getRandomSelection(variables);
+        correctAnswer = { "λ": lambda, a, x, d }[currentVariable];
 
         let questionText = '';
-        if (find !== 'a') questionText += `a = ${formatUnit(a, 'mm')}, `;
-        if (find !== 'x') questionText += `x = ${formatUnit(x, 'mm')}, `;
-        if (find !== 'd') questionText += `d = ${d.toFixed(2)} m, `;
-        if (find !== 'lambda') questionText += `λ = ${formatUnit(lambda, 'nm')}`;
+        if (currentVariable !== 'a') questionText += `a = ${formatUnit(a, 'mm')}, `;
+        if (currentVariable !== 'x') questionText += `x = ${formatUnit(x, 'mm')}, `;
+        if (currentVariable !== 'd') questionText += `d = ${d.toFixed(2)} m, `;
+        if (currentVariable !== 'λ') questionText += `λ = ${formatUnit(lambda, 'nm')}`;
 
         document.getElementById("question-text").innerText = `Two-slit: ${questionText}`;
         document.getElementById("inputs").innerHTML = `
-          <label>Solve for ${find}</label>
+          <label>Solve for ${currentVariable}</label>
           <input type='number' id='numeric-answer' placeholder='Enter value in meters'>
           <button onclick='checkNumericAnswer()'>Check Answer</button>
+          <button onclick='revealAnswer()'>Give up</button>
         `;
       } else if (currentType === "grating") {
         const theta = (Math.random() * 15 + 5);
@@ -142,19 +144,20 @@
         const dCalc = 1 / (linesPerMm * 1000);
         const n = Math.floor(Math.random() * 3) + 1;
         const lambda = (dCalc * Math.sin(theta * Math.PI / 180)) / n;
-        const variables = ["lambda", "theta", "d"];
-        const find = getRandomSelection(variables);
-        correctAnswer = { lambda, theta, d: dCalc }[find];
+        const variables = ["λ", "θ", "d"];
+        currentVariable = getRandomSelection(variables);
+        correctAnswer = { "λ": lambda, "θ": theta, "d": dCalc }[currentVariable];
 
         let questionText = `n = ${n}, grating = ${linesPerMm} lines/mm`;
-        if (find !== 'theta') questionText += `, θ = ${theta.toFixed(1)}°`;
-        if (find !== 'lambda') questionText += `, λ = ${formatUnit(lambda, 'nm')}`;
+        if (currentVariable !== 'θ') questionText += `, θ = ${theta.toFixed(1)}°`;
+        if (currentVariable !== 'λ') questionText += `, λ = ${formatUnit(lambda, 'nm')}`;
 
         document.getElementById("question-text").innerText = `Diffraction Grating: ${questionText}`;
         document.getElementById("inputs").innerHTML = `
-          <label>Solve for ${find}</label>
+          <label>Solve for ${currentVariable}</label>
           <input type='number' id='numeric-answer' placeholder='Enter value in meters or degrees'>
           <button onclick='checkNumericAnswer()'>Check Answer</button>
+          <button onclick='revealAnswer()'>Give up</button>
         `;
       }
     }
@@ -174,18 +177,23 @@
       document.getElementById("model-answer").innerText = `Model answer: ${currentQuestion.model}`;
     }
 
+    function revealAnswer() {
+      document.getElementById("feedback").innerText = `The correct value for ${currentVariable} is approximately ${correctAnswer.toExponential(3)}.`;
+    }
+
     function checkNumericAnswer() {
       const user = parseFloat(document.getElementById("numeric-answer").value);
       if (isNaN(user)) {
         document.getElementById("feedback").innerText = "Please enter a number.";
         return;
       }
-      const errorMargin = currentType === "grating" && typeof correctAnswer === 'number' && correctAnswer < 1e-5 ? correctAnswer * 0.03 : correctAnswer * 0.02;
+      const errorMargin = correctAnswer * 0.02;
       const correct = Math.abs(user - correctAnswer) <= errorMargin;
       document.getElementById("feedback").innerText = correct
         ? "✅ Correct! Well done."
-        : `❌ Incorrect. Correct answer is approximately ${correctAnswer.toExponential(3)}.`;
+        : `❌ Incorrect. Correct value for ${currentVariable} is approximately ${correctAnswer.toExponential(3)}.`;
     }
   </script>
 </body>
 </html>
+
