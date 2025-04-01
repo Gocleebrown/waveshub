@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Waves Practice</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #eef2f3; }
+    h1 { color: #333; }
+    label { display: block; margin: 10px 0; }
+    .question-section { margin-top: 30px; }
+    textarea, input[type='number'] { width: 100%; padding: 10px; font-size: 1em; }
+    button { margin-top: 10px; padding: 8px 15px; font-size: 1em; }
+    .feedback { margin-top: 15px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Waves Topic Practice</h1>
+
+  <p>Select which types of questions you'd like to practice:</p>
+  <label><input type="checkbox" id="twoslit"> Two-Slit Interference</label>
+  <label><input type="checkbox" id="grating"> Diffraction Grating</label>
+  <label><input type="checkbox" id="definitions"> Definitions</label>
+
+  <button onclick="nextQuestion()">Start / Next Question</button>
+
+  <div class="question-section">
+    <p id="question-text">Choose a topic and click start to begin.</p>
+    <div id="inputs"></div>
+    <div id="feedback" class="feedback"></div>
+    <div id="model-answer" class="feedback" style="font-style: italic;"></div>
+  </div>
+
+  <script>
+    let currentType = null;
+    let currentQuestion = null;
+    let correctAnswer = null;
+
+    const definitions = [
+      {
+        question: "What is meant by coherent sources?",
+        keywords: ["same frequency", "constant phase difference"],
+        model: "Sources that emit waves with the same frequency and a constant phase difference."
+      },
+      {
+        question: "Define the term wavelength.",
+        keywords: ["distance", "corresponding points", "adjacent", "wave"],
+        model: "The distance between two adjacent points on a wave that are in phase."
+      },
+      {
+        question: "What is meant by phase difference?",
+        keywords: ["fraction of a cycle", "difference", "position", "wave"],
+        model: "The fraction of a cycle between the positions of two points on a wave."
+      },
+      {
+        question: "What is meant by a transverse wave?",
+        keywords: ["oscillations", "perpendicular", "direction of energy transfer"],
+        model: "A wave in which the oscillations are perpendicular to the direction of energy transfer."
+      },
+      {
+        question: "What is the principle of superposition?",
+        keywords: ["add", "displacements", "same point", "resultant"],
+        model: "When two waves meet at a point, the resultant displacement is the vector sum of the individual displacements."
+      },
+      {
+        question: "What are the conditions required to form a stationary wave?",
+        keywords: ["same frequency", "opposite direction", "similar amplitude", "interfere"],
+        model: "Two waves of the same frequency and similar amplitude travelling in opposite directions interfere."
+      },
+      {
+        question: "What is a node in a stationary wave?",
+        keywords: ["point", "no displacement", "destructive interference"],
+        model: "A point on a stationary wave where there is no displacement due to destructive interference."
+      },
+      {
+        question: "What is an antinode in a stationary wave?",
+        keywords: ["maximum displacement", "constructive interference"],
+        model: "A point on a stationary wave where the displacement is maximum due to constructive interference."
+      }
+    ];
+
+    function formatUnit(value, unit) {
+      if (unit === 'mm') return `${(value * 1000).toFixed(3)} mm`;
+      if (unit === 'nm') return `${(value * 1e9).toFixed(1)} nm`;
+      return `${value.toFixed(3)} m`;
+    }
+
+    function getRandomSelection(options) {
+      return options[Math.floor(Math.random() * options.length)];
+    }
+
+    function nextQuestion() {
+      document.getElementById("inputs").innerHTML = '';
+      document.getElementById("feedback").innerText = '';
+      document.getElementById("model-answer").innerText = '';
+
+      const types = [];
+      if (document.getElementById("twoslit").checked) types.push("twoslit");
+      if (document.getElementById("grating").checked) types.push("grating");
+      if (document.getElementById("definitions").checked) types.push("definitions");
+
+      if (types.length === 0) {
+        document.getElementById("question-text").innerText = "Please select at least one topic above.";
+        return;
+      }
+
+      currentType = getRandomSelection(types);
+
+      if (currentType === "definitions") {
+        currentQuestion = getRandomSelection(definitions);
+        document.getElementById("question-text").innerText = currentQuestion.question;
+        document.getElementById("inputs").innerHTML = `
+          <textarea id='student-answer' placeholder='Type your answer here...'></textarea><br>
+          <button onclick='checkDefinition()'>Check Answer</button>
+          <button onclick='showModelAnswer()'>Show Model Answer</button>
+        `;
+      } else if (currentType === "twoslit") {
+        const a = (Math.random() * 0.5 + 0.1) / 1000;
+        const x = (Math.random() * 4 + 1) / 1000;
+        const d = (Math.random() * 0.5 + 0.5);
+        const lambda = (a * x) / d;
+        const variables = ["lambda", "a", "x", "d"];
+        const find = getRandomSelection(variables);
+        correctAnswer = { lambda, a, x, d }[find];
+
+        let questionText = '';
+        if (find !== 'a') questionText += `a = ${formatUnit(a, 'mm')}, `;
+        if (find !== 'x') questionText += `x = ${formatUnit(x, 'mm')}, `;
+        if (find !== 'd') questionText += `d = ${d.toFixed(2)} m, `;
+        if (find !== 'lambda') questionText += `λ = ${formatUnit(lambda, 'nm')}`;
+
+        document.getElementById("question-text").innerText = `Two-slit: ${questionText}`;
+        document.getElementById("inputs").innerHTML = `
+          <label>Solve for ${find}</label>
+          <input type='number' id='numeric-answer' placeholder='Enter value in meters'>
+          <button onclick='checkNumericAnswer()'>Check Answer</button>
+        `;
+      } else if (currentType === "grating") {
+        const theta = (Math.random() * 15 + 5);
+        const d = (Math.random() * 5 + 1) / 100000;
+        const linesPerMm = Math.round(1 / (d * 1000));
+        const dCalc = 1 / (linesPerMm * 1000);
+        const n = Math.floor(Math.random() * 3) + 1;
+        const lambda = (dCalc * Math.sin(theta * Math.PI / 180)) / n;
+        const variables = ["lambda", "theta", "d"];
+        const find = getRandomSelection(variables);
+        correctAnswer = { lambda, theta, d: dCalc }[find];
+
+        let questionText = `n = ${n}, grating = ${linesPerMm} lines/mm`;
+        if (find !== 'theta') questionText += `, θ = ${theta.toFixed(1)}°`;
+        if (find !== 'lambda') questionText += `, λ = ${formatUnit(lambda, 'nm')}`;
+
+        document.getElementById("question-text").innerText = `Diffraction Grating: ${questionText}`;
+        document.getElementById("inputs").innerHTML = `
+          <label>Solve for ${find}</label>
+          <input type='number' id='numeric-answer' placeholder='Enter value in meters or degrees'>
+          <button onclick='checkNumericAnswer()'>Check Answer</button>
+        `;
+      }
+    }
+
+    function checkDefinition() {
+      const input = document.getElementById("student-answer").value.toLowerCase();
+      const found = currentQuestion.keywords.filter(k => input.includes(k));
+      const missed = currentQuestion.keywords.filter(k => !input.includes(k));
+
+      let feedback = `You included ${found.length} out of ${currentQuestion.keywords.length} key ideas.`;
+      if (found.length > 0) feedback += `\n✅ Found: ${found.join(", ")}`;
+      if (missed.length > 0) feedback += `\n❌ Missed: ${missed.join(", ")}`;
+      document.getElementById("feedback").innerText = feedback;
+    }
+
+    function showModelAnswer() {
+      document.getElementById("model-answer").innerText = `Model answer: ${currentQuestion.model}`;
+    }
+
+    function checkNumericAnswer() {
+      const user = parseFloat(document.getElementById("numeric-answer").value);
+      if (isNaN(user)) {
+        document.getElementById("feedback").innerText = "Please enter a number.";
+        return;
+      }
+      const errorMargin = currentType === "grating" && typeof correctAnswer === 'number' && correctAnswer < 1e-5 ? correctAnswer * 0.03 : correctAnswer * 0.02;
+      const correct = Math.abs(user - correctAnswer) <= errorMargin;
+      document.getElementById("feedback").innerText = correct
+        ? "✅ Correct! Well done."
+        : `❌ Incorrect. Correct answer is approximately ${correctAnswer.toExponential(3)}.`;
+    }
+  </script>
+</body>
+</html>
