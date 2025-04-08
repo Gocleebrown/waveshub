@@ -3,197 +3,1797 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Waves Practice</title>
+  <title>Physics Practice Hub</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #eef2f3; }
-    h1 { color: #333; }
-    label { display: block; margin: 10px 0; }
-    .question-section { margin-top: 30px; }
-    textarea, input[type='number'] { width: 100%; padding: 10px; font-size: 1em; }
-    button { margin-top: 10px; padding: 8px 15px; font-size: 1em; }
-    .feedback { margin-top: 15px; font-weight: bold; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #eef2f3;
+      margin-right: 250px; /* Reserve space for difficulty panel */
+    }
+    h1, h2, h3 { color: #333; }
+    .section { margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px; }
+    .topics-grid { display: flex; flex-wrap: wrap; gap: 20px; }
+    .topic-column { flex: 1 1 300px; }
+    label { display: block; margin: 5px 0; }
+    button { margin-top: 20px; padding: 10px 15px; font-size: 1em; }
+    #question-box {
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 30px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    #score-box { font-weight: bold; margin-top: 10px; }
+    .question-img { max-width: 100%; height: auto; margin: 10px 0; }
+    /* Difficulty panel */
+    #difficulty-container {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      width: 200px;
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    #difficulty-container h3 { margin-top: 0; }
   </style>
 </head>
 <body>
-  <h1>Waves Topic Practice</h1>
+  <h1>Cambridge Physics 9702 Practice Hub</h1>
 
-  <p>Select which types of questions you'd like to practice:</p>
-  <label><input type="checkbox" id="twoslit"> Two-Slit Interference</label>
-  <label><input type="checkbox" id="grating"> Diffraction Grating</label>
-  <label><input type="checkbox" id="definitions"> Definitions</label>
-
-  <button onclick="nextQuestion()">Start / Next Question</button>
-
-  <div class="question-section">
-    <p id="question-text">Choose a topic and click start to begin.</p>
-    <div id="inputs"></div>
-    <div id="feedback" class="feedback"></div>
-    <div id="model-answer" class="feedback" style="font-style: italic;"></div>
+  <!-- Whole Course Section -->
+  <div class="section">
+    <h2>Whole Course</h2>
+    <label>
+      <input type="checkbox" id="whole-defs" onchange="toggleByGroup('defs', this.checked)">
+      Definitions
+    </label>
+    <label>
+      <input type="checkbox" id="whole-eqs" onchange="toggleByGroup('eqs', this.checked)">
+      Equations
+    </label>
+    <button onclick="startPractice()">Start Practice</button>
   </div>
 
-  <script>
-    let currentType = null;
-    let currentQuestion = null;
-    let correctAnswer = null;
-    let currentVariable = null;
+  <!-- By Topic Section -->
+  <div class="section">
+    <h2>By Topic</h2>
+    <div class="topics-grid">
+      <div class="topic-column" id="topic-columns-left"></div>
+      <div class="topic-column" id="topic-columns-right"></div>
+    </div>
+  </div>
 
-    const definitions = [
-      {
-        question: "What is meant by coherent sources?",
-        keywords: ["same frequency", "constant phase difference"],
-        model: "Sources that emit waves with the same frequency and a constant phase difference."
-      },
-      {
-        question: "Define the term wavelength.",
-        keywords: ["distance", "corresponding points", "adjacent", "wave"],
-        model: "The distance between two adjacent points on a wave that are in phase."
-      },
-      {
-        question: "What is meant by phase difference?",
-        keywords: ["fraction of a cycle", "difference", "position", "wave"],
-        model: "The fraction of a cycle between the positions of two points on a wave."
-      },
-      {
-        question: "What is meant by a transverse wave?",
-        keywords: ["oscillations", "perpendicular", "direction of energy transfer"],
-        model: "A wave in which the oscillations are perpendicular to the direction of energy transfer."
-      },
-      {
-        question: "What is the principle of superposition?",
-        keywords: ["add", "displacements", "same point", "resultant"],
-        model: "When two waves meet at a point, the resultant displacement is the vector sum of the individual displacements."
-      },
-      {
-        question: "What are the conditions required to form a stationary wave?",
-        keywords: ["same frequency", "opposite direction", "similar amplitude", "interfere"],
-        model: "Two waves of the same frequency and similar amplitude travelling in opposite directions interfere."
-      },
-      {
-        question: "What is a node in a stationary wave?",
-        keywords: ["point", "no displacement", "destructive interference"],
-        model: "A point on a stationary wave where there is no displacement due to destructive interference."
-      },
-      {
-        question: "What is an antinode in a stationary wave?",
-        keywords: ["maximum displacement", "constructive interference"],
-        model: "A point on a stationary wave where the displacement is maximum due to constructive interference."
-      }
+  <!-- Another Start Practice Button -->
+  <div class="section">
+    <button onclick="startPractice()">Start Practice</button>
+  </div>
+
+  <div id="score-box">Score: <span id="score">0</span></div>
+  <div id="question-box"></div>
+  
+  <!-- Container for dynamic diagrams (currently not used) -->
+  <div id="diagramContainer"></div>
+  
+  <!-- Container for answer inputs -->
+  <div id="answerInputs"></div>
+  
+  <!-- Feedback area -->
+  <div id="feedback" style="font-weight: bold; margin-top: 10px;"></div>
+  
+  <!-- Diffraction sub-exercise elements (if needed) -->
+  <!-- These elements could be positioned where appropriate -->
+  <div id="d-exercise" style="margin-top:20px;">
+    <input type="text" id="d-answer" placeholder="Enter d value...">
+    <button onclick="checkDAnswer()">Check d</button>
+    <button onclick="revealD()">Give up</button>
+    <div id="d-feedback" style="font-weight: bold; margin-top: 5px;"></div>
+  </div>
+  
+  <!-- Difficulty Panel -->
+  <div id="difficulty-container">
+    <h3>Select Difficulty</h3>
+    <input type="radio" name="difficulty" id="difficulty-go-easy" value="easy" checked>
+    <label for="difficulty-go-easy">Go Easy</label><br>
+    <input type="radio" name="difficulty" id="difficulty-im-getting-there" value="mixed">
+    <label for="difficulty-im-getting-there">I'm Getting There</label><br>
+    <input type="radio" name="difficulty" id="difficulty-hard" value="hard">
+    <label for="difficulty-hard">Hard</label><br>
+  </div>
+  
+  <script>
+    /* -----------------------------
+       Global Variables and Setup
+    ----------------------------- */
+    let answeredCurrent = false;  // Prevent repeated scoring
+    let currentQuestion = null;   // The current question object
+    let currentAnswers = null;    // Expected answer(s) or keyword groups
+    let score = 0;                // User score
+    let mixedCount = 0;           // For "I'm Getting There" mode (2 easy : 1 hard)
+    // (For diffraction sub-exercises)
+    let dCalculated = 0; // this would be set dynamically in any diffraction question
+
+    // Utility: Ordinal suffix for harmonic questions
+    function ordinalSuffix(n) {
+      let j = n % 10, k = n % 100;
+      if (j === 1 && k !== 11) return n + "st";
+      if (j === 2 && k !== 12) return n + "nd";
+      if (j === 3 && k !== 13) return n + "rd";
+      return n + "th";
+    }
+
+    // Utility: Return a random element from an array
+    function getRandom(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    /* -----------------------------
+       Topics & Topic Checkboxes
+    ----------------------------- */
+    const topics = [
+      "Physical quantities and units",
+      "Kinematics",
+      "Dynamics",
+      "Forces, density and pressure",
+      "Work, energy and power",
+      "Deformation of solids",
+      "Waves",
+      "Superposition",
+      "Electricity",
+      "D.C. circuits",
+      "Particle and nuclear physics"
     ];
 
-    function formatUnit(value, unit) {
-      if (unit === 'mm') return `${(value * 1000).toFixed(3)} mm`;
-      if (unit === 'nm') return `${(value * 1e9).toFixed(1)} nm`;
-      return `${value.toFixed(3)} m`;
+    function generateTopicCheckboxes() {
+      const left = document.getElementById("topic-columns-left");
+      const right = document.getElementById("topic-columns-right");
+      topics.forEach((name, i) => {
+        const topicNum = i + 1;
+        const block = 
+          `<h3>${topicNum}. ${name}</h3>
+          <label><input type="checkbox" id="topic${topicNum}-defs"> Definitions</label>
+          <label><input type="checkbox" id="topic${topicNum}-eqs"> Equations</label>`;
+        if (i % 2 === 0) left.innerHTML += block;
+        else right.innerHTML += block;
+      });
     }
 
-    function getRandomSelection(options) {
-      return options[Math.floor(Math.random() * options.length)];
+    function toggleByGroup(typeSuffix, isChecked) {
+      const boxes = document.querySelectorAll(`input[id$="-${typeSuffix}"]`);
+      boxes.forEach(box => box.checked = isChecked);
     }
 
-    function nextQuestion() {
-      document.getElementById("inputs").innerHTML = '';
-      document.getElementById("feedback").innerText = '';
-      document.getElementById("model-answer").innerText = '';
-
-      const types = [];
-      if (document.getElementById("twoslit").checked) types.push("twoslit");
-      if (document.getElementById("grating").checked) types.push("grating");
-      if (document.getElementById("definitions").checked) types.push("definitions");
-
-      if (types.length === 0) {
-        document.getElementById("question-text").innerText = "Please select at least one topic above.";
+    /* -----------------------------
+       Full Question Bank
+    ----------------------------- */
+    const questionBank = [
+      // --- Topic 1: Physical quantities and units ---
+      {
+        topic: 1, difficulty: "easy", type: "equation",
+        question: function() {
+          const km = 3.2, m = km * 1000;
+          return { 
+            text: `Convert ${km} km to meters.`,
+            answer: m.toFixed(0),
+            modelAnswer: `We know that 1 km = 1000 m; thus, ${km} km = ${m} m.`
+          };
+        }
+      },
+      {
+        topic: 1, difficulty: "easy", type: "equation",
+        question: function() {
+          const grams = 5000, kg = grams / 1000;
+          return { 
+            text: `Express ${grams} g in kilograms.`,
+            answer: kg.toFixed(1),
+            modelAnswer: `1 kg = 1000 g, so ${grams} g = ${kg} kg.`
+          };
+        }
+      },
+      {
+        topic: 1, difficulty: "easy", type: "equation",
+        question: function() {
+          const km = 60, hr = 1, mps = (km * 1000) / (hr * 3600);
+          return { 
+            text: `A car travels ${km} km in ${hr} hour. What is its speed in m/s?`,
+            answer: mps.toFixed(2),
+            modelAnswer: `Speed = 60000 m / 3600 s ≈ ${mps.toFixed(2)} m/s.`
+          };
+        }
+      },
+      {
+        topic: 1, difficulty: "easy", type: "equation",
+        question: function() {
+          const mass_g = 2000, volume_cm3 = 500;
+          const density = (mass_g / 1000) / (volume_cm3 / 1e6);
+          return { 
+            text: `A substance has ${mass_g} g and occupies ${volume_cm3} cm³. Calculate its density in kg/m³.`,
+            answer: density.toFixed(0),
+            modelAnswer: `Density = mass/volume = (${mass_g/1000} kg) / (${volume_cm3/1e6} m³) ≈ ${density.toFixed(0)} kg/m³.`
+          };
+        }
+      },
+      {
+        topic: 1, difficulty: "easy", type: "definition",
+        question: "Define a scalar quantity.",
+        modelAnswer: "A scalar quantity is described only by its magnitude.",
+        keywords: [["magnitude", "size", "value"], ["no direction", "directionless"]]
+      },
+      {
+        topic: 1, difficulty: "easy", type: "definition",
+        question: "Define a vector quantity.",
+        modelAnswer: "A vector quantity has both magnitude and direction.",
+        keywords: [["magnitude", "size", "value"], ["direction", "oriented"]]
+      },
+      {
+        topic: 1, difficulty: "easy", type: "definition",
+        question: "Define SI base quantity.",
+        modelAnswer: "An SI base quantity is defined independently and used to derive other quantities.",
+        keywords: [["independent", "without reference"], ["other quantities"]]
+      },
+      {
+        topic: 1, difficulty: "easy", type: "definition",
+        question: "Define random error.",
+        modelAnswer: "Random error is the unpredictable variation in measurements due to small, uncontrollable factors.",
+        keywords: [["unpredictable"], ["variation", "fluctuation"], ["measurement", "reading"]]
+      },
+      {
+        topic: 1, difficulty: "easy", type: "definition",
+        question: "Define systematic error.",
+        modelAnswer: "Systematic error is a consistent error that skews measurements in the same direction.",
+        keywords: [["consistent", "repeated"], ["error", "bias"], ["same direction"]]
+      },
+      {
+        topic: 1, difficulty: "easy", type: "definition",
+        question: "Define precision.",
+        modelAnswer: "Precision refers to how close repeated measurements are to each other.",
+        keywords: [["repeatability"], ["closeness", "consistency"]]
+      },
+      {
+        topic: 1, difficulty: "easy", type: "definition",
+        question: "Define accuracy.",
+        modelAnswer: "Accuracy indicates how close a measurement is to the true or accepted value.",
+        keywords: [["true value"], ["correct", "actual"]]
+      },
+      {
+        topic: 1, difficulty: "easy", type: "definition",
+        question: "Define absolute uncertainty.",
+        modelAnswer: "Absolute uncertainty is the margin by which a measured value may vary from the true value.",
+        keywords: [["uncertainty", "error"], ["margin", "amount"]]
+      },
+      {
+        topic: 1, difficulty: "easy", type: "definition",
+        question: "Explain how to combine uncertainties for multiplication and division.",
+        modelAnswer: "For multiplication or division, add the percentage uncertainties of the individual values to get the total percentage uncertainty.",
+        keywords: [["add", "sum"], ["percentage uncertainty"]]
+      },
+      {
+        topic: 1, difficulty: "hard", type: "equation",
+        question: function() {
+          const length = 1.20, uncertainty = 0.02;
+          const perc = (uncertainty / length) * 100;
+          return { 
+            text: `An object is measured as ${length} m with an uncertainty of ${uncertainty} m. Calculate the percentage uncertainty.`,
+            answer: perc.toFixed(2) + " %",
+            modelAnswer: `Percentage uncertainty = (0.02/1.20)*100 ≈ ${perc.toFixed(2)} %.`
+          };
+        }
+      },
+      
+      // --- Topic 2: Kinematics ---
+      {
+        topic: 2, difficulty: "easy", type: "equation",
+        question: function() {
+          const u = Math.floor(Math.random() * 10 + 5),
+                a = Math.floor(Math.random() * 4 + 1),
+                t = Math.floor(Math.random() * 4 + 2),
+                s = u * t + 0.5 * a * t * t;
+          return { 
+            text: `A body starts at ${u} m/s and accelerates at ${a} m/s² for ${t} s. Find its displacement.`,
+            answer: s.toFixed(1),
+            modelAnswer: `Displacement = ut + 0.5at², so ≈ ${s.toFixed(1)} m.`
+          };
+        }
+      },
+      {
+        topic: 2, difficulty: "easy", type: "equation",
+        question: function() {
+          const m = Math.floor(Math.random() * 20 + 5),
+                angle = Math.floor(Math.random() * 30 + 10),
+                d = Math.floor(Math.random() * 10 + 2),
+                g = 9.8,
+                a = g * Math.sin(angle * Math.PI / 180),
+                v = Math.sqrt(2 * a * d);
+          return { 
+            text: `A ${m} kg block slides down a ${angle}° frictionless slope for ${d} m. Find its speed at the bottom.`,
+            answer: v.toFixed(2),
+            modelAnswer: `Acceleration a ≈ ${a.toFixed(2)} m/s²; speed v ≈ ${v.toFixed(2)} m/s.`
+          };
+        }
+      },
+      {
+        topic: 2, difficulty: "hard", type: "numeric_multi",
+        question: function() {
+          const mass = 20, angle = 23, distance = 5, g = 9.8;
+          const a = g * Math.sin(angle * Math.PI / 180);
+          const v = Math.sqrt(2 * a * distance);
+          const ke = 0.5 * mass * v * v;
+          return { 
+            text: `A ${mass} kg block slides down a ${angle}° slope for ${distance} m. Calculate: (a) the acceleration, (b) the final speed, and (c) the kinetic energy.`,
+            answer: [a.toFixed(2) + " m/s²", v.toFixed(2) + " m/s", ke.toFixed(2) + " J"],
+            modelAnswer: [
+              `a ≈ ${a.toFixed(2)} m/s²,`,
+              `v ≈ ${v.toFixed(2)} m/s,`,
+              `KE ≈ ${ke.toFixed(2)} J.`
+            ]
+          };
+        }
+      },
+      {
+        topic: 2, difficulty: "hard", type: "equation",
+        question: function() {
+          const u = Math.floor(Math.random() * 10 + 10),
+                angle = Math.floor(Math.random() * 30 + 30),
+                g = 9.8,
+                R = (u * u * Math.sin(2 * angle * Math.PI / 180)) / g;
+          return { 
+            text: `A projectile is launched at ${angle}° with a speed of ${u} m/s. Calculate its horizontal range.`,
+            answer: R.toFixed(2),
+            modelAnswer: `Horizontal range R ≈ ${R.toFixed(2)} m.`
+          };
+        }
+      },
+      {
+        topic: 2, difficulty: "easy", type: "equation",
+        question: function() {
+          const h = Math.floor(Math.random() * 20 + 10),
+                g = 9.8,
+                t = Math.sqrt((2 * h) / g);
+          return { 
+            text: `An object is launched horizontally from a height of ${h} m. Find the time to hit the ground.`,
+            answer: t.toFixed(2),
+            modelAnswer: `Time t ≈ ${t.toFixed(2)} s.`
+          };
+        }
+      },
+      {
+        topic: 2, difficulty: "easy", type: "equation",
+        question: function() {
+          const t = Math.floor(Math.random() * 4 + 2),
+                g = 9.8,
+                s = 0.5 * g * t * t;
+          return { 
+            text: `An object free-falls for ${t} s. Find the distance it falls.`,
+            answer: s.toFixed(1),
+            modelAnswer: `Distance ≈ ${s.toFixed(1)} m.`
+          };
+        }
+      },
+      {
+        topic: 2, difficulty: "easy", type: "definition",
+        question: "Define displacement.",
+        modelAnswer: "Displacement is the change in position of an object in a specific direction.",
+        keywords: [["displacement", "distance"], ["direction", "oriented", "straight line"], ["between two points"]]
+      },
+      {
+        topic: 2, difficulty: "easy", type: "definition",
+        question: "Define speed.",
+        modelAnswer: "Speed is the distance traveled per unit time taken.",
+        keywords: [["distance"], ["per unit time", "divided by time"]]
+      },
+      {
+        topic: 2, difficulty: "easy", type: "definition",
+        question: "Define velocity.",
+        modelAnswer: "Velocity is displacement per unit time that includes direction.",
+        keywords: [["displacement"], ["per unit time"]]
+      },
+      {
+        topic: 2, difficulty: "easy", type: "definition",
+        question: "Define acceleration.",
+        modelAnswer: "Acceleration is the rate at which velocity changes over time.",
+        keywords: [["rate"], ["change in velocity"], ["per unit time"]]
+      },
+      {
+        topic: 2, difficulty: "easy", type: "definition",
+        question: "State what the gradient of a displacement–time graph represents.",
+        modelAnswer: "It represents the velocity.",
+        keywords: [["velocity"]]
+      },
+      {
+        topic: 2, difficulty: "easy", type: "definition",
+        question: "State what the gradient of a velocity–time graph represents.",
+        modelAnswer: "It represents the acceleration.",
+        keywords: [["acceleration"]]
+      },
+      {
+        topic: 2, difficulty: "easy", type: "definition",
+        question: "State what the area under a velocity–time graph represents.",
+        modelAnswer: "It represents the displacement.",
+        keywords: [["displacement"]]
+      },
+      
+      // --- Topic 3: Dynamics ---
+      {
+        topic: 3, difficulty: "easy", type: "equation",
+        question: function() {
+          const L = Math.floor(Math.random() * 5 + 1),
+                W = Math.floor(Math.random() * 50 + 20),
+                angle = Math.floor(Math.random() * 30 + 30),
+                radians = angle * Math.PI / 180,
+                T = (W * L / 2) / (L * Math.sin(radians));
+          return { 
+            text: `A beam of length ${L} m and weight ${W} N is supported by a string at ${angle}°. Find the tension in the string.`,
+            answer: T.toFixed(1),
+            modelAnswer: `Tension T ≈ ${T.toFixed(1)} N.`
+          };
+        }
+      },
+      {
+        topic: 3, difficulty: "easy", type: "equation",
+        question: function() {
+          const m1 = 2, m2 = 3, u1 = 3, u2 = 0;
+          const vf = (m1 * u1 + m2 * u2) / (m1 + m2);
+          return { 
+            text: `A ${m1} kg object moving at ${u1} m/s collides with a ${m2} kg object at rest. Find the final speed of the combined mass.`,
+            answer: vf.toFixed(2),
+            modelAnswer: `Final speed ≈ ${vf.toFixed(2)} m/s.`
+          };
+        }
+      },
+      {
+        topic: 3, difficulty: "easy", type: "equation",
+        question: function() {
+          const m = Math.floor(Math.random() * 20 + 5),
+                a = Math.floor(Math.random() * 5 + 1),
+                F = m * a;
+          return { 
+            text: `Given a mass of ${m} kg accelerating at ${a} m/s², find the net force.`,
+            answer: F.toFixed(1),
+            modelAnswer: `Force F ≈ ${F.toFixed(1)} N.`
+          };
+        }
+      },
+      {
+        topic: 3, difficulty: "easy", type: "equation",
+        question: function() {
+          const F_applied = Math.floor(Math.random() * 50 + 50),
+                friction = Math.floor(Math.random() * 20 + 10),
+                netF = F_applied - friction;
+          return { 
+            text: `A force of ${F_applied} N is applied, and friction opposes with ${friction} N. Find the net force.`,
+            answer: netF.toFixed(1),
+            modelAnswer: `Net force ≈ ${netF.toFixed(1)} N.`
+          };
+        }
+      },
+      {
+        topic: 3, difficulty: "hard", type: "numeric_multi",
+        question: function() {
+          const m1 = 2, m2 = 3,
+                u1 = Math.floor(Math.random() * 10 + 5),
+                u2 = Math.floor(Math.random() * 10),
+                v1 = ((m1 - m2) / (m1 + m2)) * u1 + ((2 * m2) / (m1 + m2)) * u2;
+          return { 
+            text: `In an elastic collision, a ${m1} kg object at ${u1} m/s collides with a ${m2} kg object at ${u2} m/s. Find the final speed of the ${m1} kg object.`,
+            answer: v1.toFixed(2),
+            modelAnswer: `Final speed ≈ ${v1.toFixed(2)} m/s.`
+          };
+        }
+      },
+      {
+        topic: 3, difficulty: "hard", type: "numeric_multi",
+        question: function() {
+          const m1 = 2, m2 = 3, v1i = 5, v1f = 3, theta1 = 30;
+          const v1fx = v1f * Math.cos(theta1 * Math.PI / 180);
+          const v1fy = v1f * Math.sin(theta1 * Math.PI / 180);
+          const p_initial_x = m1 * v1i;
+          const p1x = m1 * v1fx;
+          const v2fx = (p_initial_x - p1x) / m2;
+          const v2fy = - (m1 * v1fy) / m2;
+          const v2f = Math.sqrt(v2fx * v2fx + v2fy * v2fy);
+          const theta2 = Math.atan2(v2fy, v2fx) * (180 / Math.PI);
+          return { 
+            text: `A 2 kg ball at 5 m/s collides with a 3 kg ball at rest. After collision, the 2 kg ball moves at 3 m/s at 30° above horizontal. Calculate: (a) speed and (b) angle of the 3 kg ball.`,
+            answer: [v2f.toFixed(2), theta2.toFixed(2)],
+            modelAnswer: [
+              `Speed ≈ ${v2f.toFixed(2)} m/s,`,
+              `Angle ≈ ${theta2.toFixed(2)}°.`
+            ]
+          };
+        }
+      },
+      {
+        topic: 3, difficulty: "easy", type: "definition",
+        question: "State Newton’s First Law of Motion.",
+        modelAnswer: "A body remains at rest or in uniform motion unless acted upon by a net force.",
+        keywords: [["remains at rest", "constant motion"], ["no net force", "unopposed"]]
+      },
+      {
+        topic: 3, difficulty: "easy", type: "definition",
+        question: "State Newton’s Second Law of Motion.",
+        modelAnswer: "The force on an object is proportional to the rate of change of its momentum.",
+        keywords: [["rate of change of momentum", "change in momentum over time"]]
+      },
+      {
+        topic: 3, difficulty: "easy", type: "definition",
+        question: "State Newton’s Third Law of Motion.",
+        modelAnswer: "For every action, there is an equal and opposite reaction.",
+        keywords: [["equal"], ["opposite"]]
+      },
+      {
+        topic: 3, difficulty: "easy", type: "definition",
+        question: "Define inertia.",
+        modelAnswer: "Inertia is the tendency of an object to resist any change in its state of motion.",
+        keywords: [["resist"], ["change"], ["motion"]]
+      },
+      
+      // --- Topic 4: Forces, density and pressure ---
+      {
+        topic: 4, difficulty: "easy", type: "equation",
+        question: function() {
+          const h = Math.floor(Math.random() * 10 + 5),
+                rho = 1000, g = 9.8,
+                pressure = rho * g * h;
+          return { 
+            text: `Calculate the hydrostatic pressure at a depth of ${h} m in water.`,
+            answer: pressure.toFixed(0),
+            modelAnswer: `Pressure ≈ ${pressure.toFixed(0)} Pa.`
+          };
+        }
+      },
+      {
+        topic: 4, difficulty: "easy", type: "equation",
+        question: function() {
+          const V = Math.floor(Math.random() * 100 + 100),
+                rho = 1000, g = 9.8,
+                V_m3 = V / 1e6,
+                F_b = rho * g * V_m3;
+          return { 
+            text: `An object displaces ${V} cm³ of water. Calculate the buoyant force.`,
+            answer: F_b.toFixed(2),
+            modelAnswer: `Buoyant force ≈ ${F_b.toFixed(2)} N.`
+          };
+        }
+      },
+      {
+        topic: 4, difficulty: "easy", type: "equation",
+        question: function() {
+          const A = Math.floor(Math.random() * 50 + 50),
+                h = Math.floor(Math.random() * 4 + 2),
+                rho = 1000, g = 9.8,
+                A_m2 = A / 10000,
+                F = rho * g * h * A_m2;
+          return { 
+            text: `A container with a base area of ${A} cm² filled with water to a height of ${h} m. Calculate the force on the base.`,
+            answer: F.toFixed(1),
+            modelAnswer: `Force ≈ ${F.toFixed(1)} N.`
+          };
+        }
+      },
+      {
+        topic: 4, difficulty: "easy", type: "definition",
+        question: "Define pressure.",
+        modelAnswer: "Pressure is the force exerted per unit area.",
+        keywords: [["force"], ["per unit area", "divided by area"]]
+      },
+      {
+        topic: 4, difficulty: "easy", type: "definition",
+        question: "Define density.",
+        modelAnswer: "Density is the mass per unit volume of a substance.",
+        keywords: [["mass"], ["per unit volume", "divided by volume"]]
+      },
+      {
+        topic: 4, difficulty: "hard", type: "numeric_multi",
+        question: function() {
+          const area_cm2 = 500, height = 2.5, rho = 1000, g = 9.8,
+                area_m2 = area_cm2 / 10000,
+                pressure = rho * g * height,
+                extra = 0.1 * pressure,
+                extraForce = extra * area_m2;
+          return { 
+            text: `A container with a base area of ${area_cm2} cm² and water height ${height} m. Calculate: (a) the hydrostatic pressure and (b) the extra force for a 10% pressure increase.`,
+            answer: [pressure.toFixed(0) + " Pa", extraForce.toFixed(2) + " N"],
+            modelAnswer: [
+              `Pressure ≈ ${pressure.toFixed(0)} Pa,`,
+              `Extra force ≈ ${extraForce.toFixed(2)} N.`
+            ]
+          };
+        }
+      },
+      
+      // --- Topic 5: Work, energy and power ---
+      {
+        topic: 5, difficulty: "easy", type: "equation",
+        question: function() {
+          const m = Math.floor(Math.random() * 10 + 1),
+                v = Math.floor(Math.random() * 10 + 1),
+                KE = 0.5 * m * v * v;
+          return { 
+            text: `Calculate the kinetic energy of a ${m} kg object moving at ${v} m/s.`,
+            answer: KE.toFixed(1),
+            modelAnswer: `KE ≈ ${KE.toFixed(1)} J.`
+          };
+        }
+      },
+      {
+        topic: 5, difficulty: "easy", type: "equation",
+        question: function() {
+          const m = Math.floor(Math.random() * 10 + 1),
+                h = Math.floor(Math.random() * 10 + 1),
+                g = 9.8,
+                GPE = m * g * h;
+          return { 
+            text: `A ${m} kg object is raised ${h} m. Calculate its gravitational potential energy.`,
+            answer: GPE.toFixed(1),
+            modelAnswer: `GPE ≈ ${GPE.toFixed(1)} J.`
+          };
+        }
+      },
+      {
+        topic: 5, difficulty: "easy", type: "equation",
+        question: function() {
+          const W = Math.floor(Math.random() * 200 + 100),
+                t = Math.floor(Math.random() * 10 + 1),
+                P = W / t;
+          return { 
+            text: `If ${W} J of work is done in ${t} s, calculate the power output.`,
+            answer: P.toFixed(1),
+            modelAnswer: `Power ≈ ${P.toFixed(1)} W.`
+          };
+        }
+      },
+      {
+        topic: 5, difficulty: "easy", type: "equation",
+        question: function() {
+          const F = Math.floor(Math.random() * 50 + 50),
+                d = Math.floor(Math.random() * 10 + 5),
+                work = F * d;
+          return { 
+            text: `A force of ${F} N moves an object through ${d} m. Calculate the work done.`,
+            answer: work.toFixed(1),
+            modelAnswer: `Work ≈ ${work.toFixed(1)} J.`
+          };
+        }
+      },
+      {
+        topic: 5, difficulty: "easy", type: "definition",
+        question: "State what is meant by the work done by a force.",
+        modelAnswer: "Work is done when a force causes an object to move in the force’s direction.",
+        keywords: [["force"], ["move", "displacement"], ["direction"]]
+      },
+      {
+        topic: 5, difficulty: "easy", type: "definition",
+        question: "Define power.",
+        modelAnswer: "Power is the rate at which work is done or energy is transferred.",
+        keywords: [["rate"], ["work", "energy"]]
+      },
+      {
+        topic: 5, difficulty: "easy", type: "definition",
+        question: "Use the definition of power to determine its SI base units.",
+        modelAnswer: "Power (W) = work per unit time, so its SI base units are kg·m²/s³.",
+        keywords: [["kg"], ["m²"], ["s^-3"]]
+      },
+      {
+        topic: 5, difficulty: "easy", type: "definition",
+        question: "Use the definition of work to determine its SI base units.",
+        modelAnswer: "Work (J) = force × distance, so its SI base units are kg·m²/s².",
+        keywords: [["kg"], ["m²"], ["s^-2"]]
+      },
+      {
+        topic: 5, difficulty: "easy", type: "definition",
+        question: "Use the definition of force (F = m·a) to determine its SI base units.",
+        modelAnswer: "Force (N) = mass × acceleration, so its SI units are kg·m/s².",
+        keywords: [["kg"], ["m/s²"]]
+      },
+      {
+        topic: 5, difficulty: "easy", type: "definition",
+        question: "Use the definition of pressure (P = F/A) to determine its SI base units.",
+        modelAnswer: "Pressure (Pa) = force per unit area, so its SI units are kg/(m·s²).",
+        keywords: [["kg"], ["m"], ["s^-2"]]
+      },
+      {
+        topic: 5, difficulty: "easy", type: "definition",
+        question: "Use the definition of momentum (p = m·v) to determine its SI base units.",
+        modelAnswer: "Momentum has SI units of kg·m/s.",
+        keywords: [["kg"], ["m/s"]]
+      },
+      {
+        topic: 5, difficulty: "easy", type: "definition",
+        question: "Use the definition of strain to determine its SI base units.",
+        modelAnswer: "Strain is a ratio of lengths and is dimensionless.",
+        keywords: [["dimensionless"], ["no units"]]
+      },
+      {
+        topic: 5, difficulty: "hard", type: "numeric_multi",
+        question: function() {
+          const Vin = 9.0, R_fixed = 1800, V_fixed = 5.4;
+          const I = V_fixed / R_fixed;
+          const V_LDR = Vin - V_fixed;
+          const R_LDR = V_LDR / I;
+          return { 
+            text: `A ${Vin} V battery (ideal) is connected in series with an LDR and a ${R_fixed} Ω resistor. The voltmeter across the fixed resistor reads ${V_fixed} V. Calculate: (a) the current and (b) the resistance of the LDR.`,
+            answer: [I.toFixed(3) + " A", R_LDR.toFixed(0) + " Ω"],
+            modelAnswer: [
+              `I ≈ ${I.toFixed(3)} A,`,
+              `R_LDR ≈ ${R_LDR.toFixed(0)} Ω.`
+            ]
+          };
+        }
+      },
+      
+      // --- Topic 6: Deformation of solids ---
+      {
+        topic: 6, difficulty: "easy", type: "equation",
+        question: function() {
+          const stress = Math.floor(Math.random()*10+5),
+                strain = Math.random()*0.01+0.001,
+                E = stress / strain;
+          return { 
+            text: `A material has a stress of ${stress} MPa and a strain of ${strain.toFixed(4)}. Calculate its Young's modulus in GPa.`,
+            answer: (E/1000).toFixed(2),
+            modelAnswer: `E ≈ ${(E).toFixed(2)} MPa, which is ≈ ${(E/1000).toFixed(2)} GPa.`
+          };
+        }
+      },
+      {
+        topic: 6, difficulty: "easy", type: "equation",
+        question: function() {
+          const k = Math.floor(Math.random()*200+100),
+                F = Math.floor(Math.random()*50+10),
+                extension = F / k;
+          return { 
+            text: `A spring with constant ${k} N/m is pulled by a force of ${F} N. Calculate its extension.`,
+            answer: extension.toFixed(3),
+            modelAnswer: `Extension ≈ ${extension.toFixed(3)} m (by Hooke's law).`
+          };
+        }
+      },
+      {
+        topic: 6, difficulty: "easy", type: "equation",
+        question: function() {
+          const L0 = Math.floor(Math.random()*50+50),
+                ext = (Math.floor(Math.random()*5+1))/100,
+                strain = ext / (L0 / 100);
+          return { 
+            text: `A rod of length ${L0} cm is extended by ${ext.toFixed(2)} m. Calculate the strain.`,
+            answer: strain.toFixed(3),
+            modelAnswer: `Strain ≈ ${strain.toFixed(3)} (dimensionless).`
+          };
+        }
+      },
+      {
+        topic: 6, difficulty: "easy", type: "definition",
+        question: "State Hooke's Law.",
+        modelAnswer: "Within the elastic limit, the extension of a spring is directly proportional to the applied force.",
+        keywords: [["extension", "stretch"], ["proportional"], ["force"]]
+      },
+      {
+        topic: 6, difficulty: "easy", type: "definition",
+        question: "Define stress.",
+        modelAnswer: "Stress is the force applied per unit cross-sectional area of a material.",
+        keywords: [["force"], ["per unit", "divided by"], ["cross-sectional area", "area"]]
+      },
+      {
+        topic: 6, difficulty: "easy", type: "definition",
+        question: "Define strain.",
+        modelAnswer: "Strain is the ratio of the change in length to the original length.",
+        keywords: [["ratio"], ["change in length"], ["original length"]]
+      },
+      {
+        topic: 6, difficulty: "hard", type: "numeric_multi",
+        question: function() {
+          const length = 2, area = 1e-4, force = 10000, E = 200e9;
+          const stress = force / area;
+          const strain = stress / E;
+          const elongation = length * strain;
+          return { 
+            text: `A rod of length ${length} m and area ${area} m² is subjected to a force of ${force} N. With E = ${E/1e9} GPa, calculate: (a) stress in Pa, (b) strain, and (c) elongation in m.`,
+            answer: [stress.toExponential(2) + " Pa", strain.toExponential(2), elongation.toExponential(2) + " m"],
+            modelAnswer: [
+              `Stress ≈ ${stress.toExponential(2)} Pa,`,
+              `Strain ≈ ${strain.toExponential(2)},`,
+              `Elongation ≈ ${elongation.toExponential(2)} m.`
+            ]
+          };
+        }
+      },
+      
+      // --- Topic 7: Waves ---
+      {
+        topic: 7, difficulty: "easy", type: "equation",
+        question: function() {
+          const n = Math.floor(Math.random()*3+1),
+                L = Math.floor(Math.random()*3+1),
+                v = Math.floor(Math.random()*200+100),
+                f = (n * v) / (2 * L);
+          return { 
+            text: `A pipe closed at both ends, of length ${L} m, vibrates in its ${ordinalSuffix(n)} harmonic. Find its frequency.`,
+            answer: f.toFixed(1),
+            modelAnswer: `Frequency ≈ ${f.toFixed(1)} Hz (using f = n*v/(2*L)).`
+          };
+        }
+      },
+      {
+        topic: 7, difficulty: "easy", type: "equation",
+        question: function() {
+          const d = (Math.floor(Math.random()*4+1))/1000,
+                D = Math.floor(Math.random()*100+100),
+                x = (Math.floor(Math.random()*20+10))/1000,
+                lambda = (d * x) / (D/100);
+          return { 
+            text: `In a two-slit experiment with a slit separation of ${(d*1000).toFixed(1)} mm, screen distance ${D} cm, and fringe spacing ${(x*1000).toFixed(1)} mm, calculate the wavelength of the light.`,
+            answer: (lambda * 1e9).toFixed(6) + " m",
+            modelAnswer: `Wavelength λ ≈ ${(lambda*1e9).toFixed(6)} m.`
+          };
+        }
+      },
+      {
+        topic: 7, difficulty: "easy", type: "equation",
+        question: function() {
+          const L = Math.floor(Math.random()*3+1),
+                v = Math.floor(Math.random()*100+300),
+                f = v/(2*L),
+                T = 1/f;
+          return { 
+            text: `A pipe open at both ends, of length ${L} m, vibrates. (a) Find the fundamental frequency and (b) the time period.`,
+            answer: [f.toFixed(1), T.toFixed(3)],
+            modelAnswer: `Fundamental frequency f ≈ ${f.toFixed(1)} Hz; Time period T ≈ ${T.toFixed(3)} s.`,
+            type: "numeric_multi",
+            multi: true
+          };
+        }
+      },
+      {
+        topic: 7, difficulty: "easy", type: "definition",
+        question: "Define wavelength.",
+        modelAnswer: "Wavelength is the distance between successive points on a wave that are in phase.",
+        keywords: [["distance"], ["successive"], ["in phase"]]
+      },
+      {
+        topic: 7, difficulty: "easy", type: "definition",
+        question: "Define frequency.",
+        modelAnswer: "Frequency is the number of oscillations per second.",
+        keywords: [["oscillations"], ["per second", "Hz"]]
+      },
+      {
+        topic: 7, difficulty: "easy", type: "definition",
+        question: "Define wavefront.",
+        modelAnswer: "A wavefront is a line connecting points on a wave that are in the same phase.",
+        keywords: [["line"], ["same phase"]]
+      },
+      {
+        topic: 7, difficulty: "hard", type: "numeric_multi",
+        question: function() {
+          const L = 2, v = 305, f = v/(4*L), T = 1/f;
+          return { 
+            text: `A pipe closed at one end, of length ${L} m, vibrates with a speed of sound ${v} m/s. Calculate: (a) its fundamental frequency, (b) its time period, and (c) verify that f×T ≈ 1.`,
+            answer: [f.toFixed(1), T.toFixed(3), (f*T).toFixed(2)],
+            modelAnswer: [
+              `Fundamental frequency f ≈ ${f.toFixed(1)} Hz,`,
+              `Time period T ≈ ${T.toFixed(3)} s,`,
+              `f×T ≈ ${(f*T).toFixed(2)} (≈ 1).`
+            ],
+            multi: true
+          };
+        }
+      },
+      // New definition: Standing wave
+      {
+        topic: 7, difficulty: "easy", type: "definition",
+        question: "Define a standing wave.",
+        modelAnswer: "A standing wave is formed by the combination of two waves moving in opposite directions with similar amplitude and the same frequency.",
+        keywords: [["two waves"], ["opposite directions"], ["similar amplitude"], ["same frequency", "coherent"]]
+      },
+      // New question: Open pipe standing wave
+      {
+        topic: 7, difficulty: "hard", type: "numeric_multi",
+        question: function() {
+          const L = Math.floor(Math.random()*3+1); // length in m
+          const n = Math.floor(Math.random()*3+1); // harmonic mode (n half wavelengths)
+          const v = Math.floor(Math.random()*50+330); // speed of sound in m/s
+          const lambda = 2 * L / n;
+          const f = v / lambda;
+          return {
+            text: `An open pipe of length ${L} m vibrates in its ${n}${ordinalSuffix(n)} harmonic mode. Given the speed of sound is ${v} m/s, calculate: (a) the wavelength and (b) the frequency of the standing wave.`,
+            answer: [lambda.toFixed(2) + " m", f.toFixed(2) + " Hz"],
+            modelAnswer: [
+              `Wavelength λ = 2L/n = 2×${L}/${n} ≈ ${lambda.toFixed(2)} m,`,
+              `Frequency f = v/λ = ${v}/${lambda.toFixed(2)} ≈ ${f.toFixed(2)} Hz.`
+            ]
+          };
+        }
+      },
+      // New question: Speaker-Microphone
+      {
+        topic: 7, difficulty: "hard", type: "equation",
+        question: function() {
+          const d = (Math.random()*0.5 + 0.2).toFixed(2); // spacing in m
+          const v = Math.floor(Math.random()*50 + 330); // speed of sound, m/s
+          const f = v / (2*d); // distance between loud points = half wavelength
+          return {
+            text: `A speaker faces a wall with a microphone between them. As the microphone is moved, it passes through loud points spaced ${d} m apart. Given the speed of sound is ${v} m/s, calculate the frequency.`,
+            answer: f.toFixed(2) + " Hz",
+            modelAnswer: `Half wavelength = ${d} m, so full wavelength = ${ (2*d).toFixed(2) } m and frequency f = ${v} / (${2*d}) ≈ ${f.toFixed(2)} Hz.`
+          };
+        }
+      },
+      // New question: Diffraction grating
+      {
+        topic: 7, difficulty: "hard", type: "equation",
+        question: function() {
+          const d = (Math.random()*0.00001 + 0.000005).toFixed(7); // grating spacing in m
+          const m = Math.floor(Math.random()*3) + 1; // order
+          const theta = Math.floor(Math.random()*30+10); // in degrees
+          const lambda = (d * Math.sin(theta * Math.PI/180)) / m;
+          return {
+            text: `A diffraction grating has a spacing of ${d} m. A bright fringe of order ${m} is observed at ${theta}°. Calculate the wavelength of the light.`,
+            answer: lambda.toFixed(7) + " m",
+            modelAnswer: `Using d*sinθ = mλ, λ = ${d}*sin(${theta}°)/${m} ≈ ${lambda.toFixed(7)} m.`
+          };
+        }
+      },
+      
+      // --- Topic 9: Electricity ---
+      {
+        topic: 9, difficulty: "easy", type: "equation",
+        question: function() {
+          const I = Math.floor(Math.random()*5+1),
+                R = Math.floor(Math.random()*20+10),
+                V = I * R;
+          return { 
+            text: `A current of ${I} A flows through a ${R} Ω resistor. Find the voltage.`,
+            answer: V.toFixed(1),
+            modelAnswer: `V ≈ ${I} × ${R} ≈ ${V.toFixed(1)} V.`
+          };
+        }
+      },
+      {
+        topic: 9, difficulty: "easy", type: "equation",
+        question: function() {
+          const V = Math.floor(Math.random()*20+10),
+                I = Math.floor(Math.random()*5+1),
+                P = V * I;
+          return { 
+            text: `Find the power for a circuit with ${V} V and ${I} A.`,
+            answer: P.toFixed(1),
+            modelAnswer: `Power ≈ ${V} × ${I} ≈ ${P.toFixed(1)} W.`
+          };
+        }
+      },
+      {
+        topic: 9, difficulty: "easy", type: "equation",
+        question: function() {
+          const R1 = Math.floor(Math.random()*20+10),
+                R2 = Math.floor(Math.random()*20+10),
+                R3 = Math.floor(Math.random()*20+10),
+                Rp = 1/(1/R1+1/R2),
+                R_total = Rp + R3;
+          return { 
+            text: `Calculate total resistance of two resistors (${R1} Ω and ${R2} Ω) in parallel, in series with ${R3} Ω.`,
+            answer: R_total.toFixed(1),
+            modelAnswer: `R_parallel ≈ ${Rp.toFixed(1)} Ω; Total ≈ ${Rp.toFixed(1)} + ${R3} = ${R_total.toFixed(1)} Ω.`
+          };
+        }
+      },
+      {
+        topic: 9, difficulty: "easy", type: "definition",
+        question: "Define electric current.",
+        modelAnswer: "Electric current is the rate at which charge flows through a conductor.",
+        keywords: [["rate", "flow"], ["charge"]]
+      },
+      {
+        topic: 9, difficulty: "easy", type: "definition",
+        question: "Define electromotive force (e.m.f.).",
+        modelAnswer: "Electromotive force is the energy per unit charge provided by a source, in volts.",
+        keywords: [["work done"], ["per unit charge"]]
+      },
+      {
+        topic: 9, difficulty: "easy", type: "definition",
+        question: "Define electric potential difference.",
+        modelAnswer: "It is the work required per unit charge to move a charge between two points.",
+        keywords: [["work"], ["per unit charge"], ["between two points"]]
+      },
+      {
+        topic: 9, difficulty: "hard", type: "numeric_multi",
+        question: function() {
+          const R = 10, Vin = 12, I1 = Vin / R, P1 = I1 * I1 * R,
+                R_series = 10, newTotal = R + R_series, I2 = Vin / newTotal;
+          return { 
+            text: `A ${R} Ω resistor is connected to a ${Vin} V battery. Calculate: (a) current, (b) power, and (c) the new current when a ${R_series} Ω resistor is added in series.`,
+            answer: [I1.toFixed(2) + " A", P1.toFixed(1) + " W", I2.toFixed(2) + " A"],
+            modelAnswer: [
+              `Current ≈ ${I1.toFixed(2)} A,`,
+              `Power ≈ ${P1.toFixed(1)} W,`,
+              `New current ≈ ${I2.toFixed(2)} A.`
+            ]
+          };
+        }
+      },
+      
+      // --- Topic 10: D.C. circuits ---
+      {
+        topic: 10, difficulty: "easy", type: "equation",
+        question: function() {
+          const R1 = Math.floor(Math.random()*50+50),
+                R2 = Math.floor(Math.random()*50+50),
+                Vin = Math.floor(Math.random()*20+10),
+                Vout = Vin * (R2 / (R1 + R2));
+          return { 
+            text: `In a voltage divider with ${R1} Ω and ${R2} Ω and an input of ${Vin} V, find the voltage across the ${R2} Ω resistor.`,
+            answer: Vout.toFixed(1),
+            modelAnswer: `V_out ≈ ${Vout.toFixed(1)} V.`
+          };
+        }
+      },
+      {
+        topic: 10, difficulty: "easy", type: "equation",
+        question: function() {
+          const Vin = Math.floor(Math.random()*20+10),
+                R_total = Math.floor(Math.random()*100+100),
+                I = Vin / R_total;
+          return { 
+            text: `Find the current in a circuit with ${R_total} Ω and ${Vin} V.`,
+            answer: I.toFixed(2),
+            modelAnswer: `I ≈ ${I.toFixed(2)} A.`
+          };
+        }
+      },
+      {
+        topic: 10, difficulty: "easy", type: "equation",
+        question: function() {
+          const I = Math.floor(Math.random()*5+1),
+                R = Math.floor(Math.random()*100+50),
+                P = I * I * R;
+          return { 
+            text: `Calculate the power dissipated in a ${R} Ω resistor carrying ${I} A.`,
+            answer: P.toFixed(1),
+            modelAnswer: `Power ≈ ${P.toFixed(1)} W.`
+          };
+        }
+      },
+      {
+        topic: 10, difficulty: "easy", type: "equation",
+        question: function() {
+          const R1 = Math.floor(Math.random()*50+50),
+                R2 = Math.floor(Math.random()*50+50),
+                R3 = Math.floor(Math.random()*50+50),
+                R_total = R1 + R2 + R3;
+          return { 
+            text: `Three resistors (${R1} Ω, ${R2} Ω, ${R3} Ω) are in series. Find the total resistance.`,
+            answer: R_total.toFixed(1),
+            modelAnswer: `Total resistance = ${R_total} Ω.`
+          };
+        }
+      },
+      {
+        topic: 10, difficulty: "easy", type: "definition",
+        question: "Define resistance.",
+        modelAnswer: "Resistance is the ratio of the voltage across a conductor to the current through it.",
+        keywords: [["voltage"], ["current"], ["ratio"]]
+      },
+      {
+        topic: 10, difficulty: "easy", type: "definition",
+        question: "Define internal resistance.",
+        modelAnswer: "Internal resistance is the resistance within a power source that causes a voltage drop.",
+        keywords: [["resistance inside"], ["power source"], ["voltage drop"]]
+      },
+      {
+        topic: 10, difficulty: "hard", type: "numeric_multi",
+        question: function() {
+          const R1 = 100, R2 = 200, R3 = 300, Vin = 12,
+                R_total = R1 + R2 + R3,
+                I = Vin / R_total,
+                V_R2 = I * R2,
+                power_R2 = V_R2 * V_R2 / R2;
+          return { 
+            text: `In a voltage divider with resistors (${R1} Ω, ${R2} Ω, ${R3} Ω) and an input voltage of ${Vin} V, calculate: (a) the voltage across the ${R2} Ω resistor and (b) its power.`,
+            answer: [V_R2.toFixed(2) + " V", power_R2.toFixed(2) + " W"],
+            modelAnswer: [
+              `Voltage ≈ ${V_R2.toFixed(2)} V,`,
+              `Power ≈ ${power_R2.toFixed(2)} W.`
+            ]
+          };
+        }
+      },
+      
+      // --- Topic 11: Particle and nuclear physics ---
+      {
+        topic: 11, difficulty: "easy", type: "equation",
+        question: function() {
+          const initialN = Math.floor(Math.random()*50+50);
+          return { 
+            text: `In β– decay, if a nucleus has a nucleon number of ${initialN}, what is its nucleon number after decay?`,
+            answer: initialN.toString(),
+            modelAnswer: `It remains ${initialN}.`
+          };
+        }
+      },
+      {
+        topic: 11, difficulty: "easy", type: "equation",
+        question: function() {
+          const initialZ = Math.floor(Math.random()*20+10),
+                finalZ = initialZ - 1;
+          return { 
+            text: `A nucleus with a proton number of ${initialZ} undergoes β+ decay. What is its new proton number?`,
+            answer: finalZ.toString(),
+            modelAnswer: `It becomes ${finalZ}.`
+          };
+        }
+      },
+      {
+        topic: 11, difficulty: "easy", type: "equation",
+        question: function() {
+          const initialMass = Math.floor(Math.random()*200+100),
+                finalMass = initialMass - 4;
+          return { 
+            text: `A nucleus with mass number ${initialMass} undergoes alpha decay. What is its new mass number?`,
+            answer: finalMass.toString(),
+            modelAnswer: `It becomes ${finalMass}.`
+          };
+        }
+      },
+      {
+        topic: 11, difficulty: "easy", type: "equation",
+        question: function() {
+          const initialMass = Math.floor(Math.random()*200+100),
+                change = 4;
+          return { 
+            text: `A nucleus with mass number ${initialMass} undergoes alpha decay. By how much does its mass number change?`,
+            answer: change.toString(),
+            modelAnswer: `It decreases by 4.`
+          };
+        }
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "Define nucleon number.",
+        modelAnswer: "Nucleon number is the total number of protons and neutrons in a nucleus.",
+        keywords: [["protons"], ["neutrons"], ["total"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "Define proton number.",
+        modelAnswer: "Proton number is the count of protons in a nucleus.",
+        keywords: [["proton"], ["number"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "Define isotope.",
+        modelAnswer: "Isotopes are atoms of the same element with the same number of protons but different numbers of neutrons.",
+        keywords: [["same protons"], ["different neutrons"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "Define a hadron.",
+        modelAnswer: "A hadron is a composite particle made of quarks that interacts via the strong nuclear force.",
+        keywords: [["quarks"], ["strong force"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "Define a baryon.",
+        modelAnswer: "A baryon is a hadron composed of three quarks.",
+        keywords: [["three quarks"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "Define a meson.",
+        modelAnswer: "A meson is a hadron composed of a quark and an antiquark.",
+        keywords: [["quark"], ["antiquark"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "Define a lepton.",
+        modelAnswer: "A lepton is a fundamental particle that does not experience the strong nuclear force.",
+        keywords: [["fundamental"], ["no strong force"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "Define a quark.",
+        modelAnswer: "A quark is a fundamental particle that comes in flavors such as up, down, charm, strange, top, and bottom.",
+        keywords: [["up"], ["down"], ["charm"], ["strange"], ["top"], ["bottom"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "State the charges of up and down quarks.",
+        modelAnswer: "The up quark has a charge of +2/3 e, while the down quark has a charge of -1/3 e.",
+        keywords: [[ "+2/3", "2/3" ], [ "-1/3", "1/3" ]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "State the quark composition of a proton.",
+        modelAnswer: "A proton is composed of two up quarks and one down quark (uud).",
+        keywords: [["2 up", "two up"], ["1 down", "uud"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "State the quark composition of a neutron.",
+        modelAnswer: "A neutron is composed of one up quark and two down quarks (udd).",
+        keywords: [["one up", "1 up"], ["two down", "2 down", "udd"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "Define an antiparticle.",
+        modelAnswer: "An antiparticle has the same mass as its corresponding particle but an opposite charge.",
+        keywords: [["same mass"], ["opposite charge"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "What is emitted during β– decay?",
+        modelAnswer: "An electron and an electron antineutrino are emitted during β– decay.",
+        keywords: [["electron"], ["antineutrino"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "What is emitted during β+ decay?",
+        modelAnswer: "During β+ decay, a positron and an electron neutrino are emitted.",
+        keywords: [["positron"], ["electron neutrino"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "Define the unified atomic mass unit (u).",
+        modelAnswer: "One unified atomic mass unit (u) is defined as 1/12 of the mass of a carbon-12 atom.",
+        keywords: [["1/12"], ["carbon-12"], ["mass"]]
+      },
+      {
+        topic: 11, difficulty: "hard", type: "numeric_multi",
+        question: function() {
+          return { 
+            text: "A nucleus with mass number 210 and atomic number 84 undergoes β– decay followed by alpha decay. Calculate the final mass number and atomic number.",
+            answer: ["206", "83"],
+            modelAnswer: ["After β– decay, the nucleon number remains 210. Then, alpha decay reduces the mass number by 4 and the atomic number by 2, resulting in 206 and 83."]
+          };
+        }
+      },
+      
+      // --- Topic 7: Waves ---
+      {
+        topic: 7, difficulty: "easy", type: "equation",
+        question: function() {
+          const n = Math.floor(Math.random()*3+1),
+                L = Math.floor(Math.random()*3+1),
+                v = Math.floor(Math.random()*200+100),
+                f = (n * v) / (2 * L);
+          return { 
+            text: `A pipe closed at both ends of length ${L} m vibrates in its ${ordinalSuffix(n)} harmonic. Find its frequency.`,
+            answer: f.toFixed(1),
+            modelAnswer: `Frequency ≈ ${f.toFixed(1)} Hz (using f = n*v/(2*L)).`
+          };
+        }
+      },
+      {
+        topic: 7, difficulty: "easy", type: "equation",
+        question: function() {
+          const d = (Math.floor(Math.random()*4+1))/1000,
+                D = Math.floor(Math.random()*100+100),
+                x = (Math.floor(Math.random()*20+10))/1000,
+                lambda = (d * x) / (D/100);
+          return { 
+            text: `In a two-slit experiment with a slit separation of ${(d*1000).toFixed(1)} mm, screen distance ${D} cm, and fringe spacing ${(x*1000).toFixed(1)} mm, calculate the wavelength of light.`,
+            answer: (lambda * 1e9).toFixed(6) + " m",
+            modelAnswer: `Using λ = (d×x)/(D/100), λ ≈ ${(lambda*1e9).toFixed(6)} m.`
+          };
+        }
+      },
+      {
+        topic: 7, difficulty: "easy", type: "equation",
+        question: function() {
+          const L = Math.floor(Math.random()*3+1),
+                v = Math.floor(Math.random()*100+300),
+                f = v/(2*L),
+                T = 1/f;
+          return { 
+            text: `A pipe open at both ends of length ${L} m vibrates. (a) Find the fundamental frequency and (b) the time period.`,
+            answer: [f.toFixed(1), T.toFixed(3)],
+            modelAnswer: `Fundamental frequency ≈ ${f.toFixed(1)} Hz; Time period ≈ ${T.toFixed(3)} s.`,
+            type: "numeric_multi",
+            multi: true
+          };
+        }
+      },
+      {
+        topic: 7, difficulty: "easy", type: "definition",
+        question: "Define wavelength.",
+        modelAnswer: "Wavelength is the distance between successive points on a wave that are in phase.",
+        keywords: [["distance"], ["successive"], ["in phase"]]
+      },
+      {
+        topic: 7, difficulty: "easy", type: "definition",
+        question: "Define frequency.",
+        modelAnswer: "Frequency is the number of oscillations per second.",
+        keywords: [["oscillations"], ["per second", "Hz"]]
+      },
+      {
+        topic: 7, difficulty: "easy", type: "definition",
+        question: "Define wavefront.",
+        modelAnswer: "A wavefront is a line that connects points on a wave that are in the same phase.",
+        keywords: [["line"], ["same phase"]]
+      },
+      {
+        topic: 7, difficulty: "hard", type: "numeric_multi",
+        question: function() {
+          const L = 2, v = 305, f = v/(4*L), T = 1/f;
+          return { 
+            text: `A pipe closed at one end of length ${L} m vibrates. Calculate: (a) its fundamental frequency, (b) its time period, and (c) verify that f×T ≈ 1.`,
+            answer: [f.toFixed(1), T.toFixed(3), (f*T).toFixed(2)],
+            modelAnswer: [
+              `Fundamental frequency ≈ ${f.toFixed(1)} Hz,`,
+              `Time period ≈ ${T.toFixed(3)} s,`,
+              `f×T ≈ ${(f*T).toFixed(2)} (≈1).`
+            ],
+            multi: true
+          };
+        }
+      },
+      // New definition: Standing Wave
+      {
+        topic: 7, difficulty: "easy", type: "definition",
+        question: "Define a standing wave.",
+        modelAnswer: "A standing wave is formed by the combination of two waves moving in opposite directions with similar amplitude and the same frequency.",
+        keywords: [["two waves"], ["opposite directions"], ["similar amplitude"], ["same frequency", "coherent"]]
+      },
+      // New question: Open Pipe Standing Wave
+      {
+        topic: 7, difficulty: "hard", type: "numeric_multi",
+        question: function() {
+          const L = Math.floor(Math.random()*3+1);
+          const n = Math.floor(Math.random()*3+1);
+          const v = Math.floor(Math.random()*50+330);
+          const lambda = 2 * L / n;
+          const f = v / lambda;
+          return {
+            text: `An open pipe of length ${L} m vibrates in its ${n}${ordinalSuffix(n)} harmonic mode. Given the speed of sound is ${v} m/s, calculate: (a) the wavelength and (b) the frequency of the standing wave.`,
+            answer: [lambda.toFixed(2) + " m", f.toFixed(2) + " Hz"],
+            modelAnswer: [
+              `Wavelength λ = 2L/n = 2×${L}/${n} ≈ ${lambda.toFixed(2)} m,`,
+              `Frequency f = v/λ = ${v}/${lambda.toFixed(2)} ≈ ${f.toFixed(2)} Hz.`
+            ]
+          };
+        }
+      },
+      // New question: Speaker-Microphone Setup
+      {
+        topic: 7, difficulty: "hard", type: "equation",
+        question: function() {
+          const d = (Math.random()*0.5+0.2).toFixed(2);
+          const v = Math.floor(Math.random()*50+330);
+          const f = v / (2*d);
+          return {
+            text: `A speaker faces a wall with a microphone between them. The microphone, when moved, passes through loud points spaced ${d} m apart. If the speed of sound is ${v} m/s, calculate the frequency.`,
+            answer: f.toFixed(2) + " Hz",
+            modelAnswer: `Loud point spacing is half a wavelength, so λ = 2×${d} = ${(2*d).toFixed(2)} m; then f = ${v}/${(2*d).toFixed(2)} ≈ ${f.toFixed(2)} Hz.`
+          };
+        }
+      },
+      // New question: Diffraction Grating
+      {
+        topic: 7, difficulty: "hard", type: "equation",
+        question: function() {
+          const d = (Math.random()*0.00001 + 0.000005).toFixed(7);
+          const m = Math.floor(Math.random()*3) + 1;
+          const theta = Math.floor(Math.random()*30+10);
+          const lambda = (d * Math.sin(theta * Math.PI/180)) / m;
+          return {
+            text: `A diffraction grating has a spacing of ${d} m. A bright fringe of order ${m} is seen at ${theta}°. Calculate the wavelength.`,
+            answer: lambda.toFixed(7) + " m",
+            modelAnswer: `Using d·sinθ = mλ, hence λ = ${d}·sin(${theta}°)/${m} ≈ ${lambda.toFixed(7)} m.`
+          };
+        }
+      },
+      
+      // --- Topic 11: Particle and nuclear physics ---
+      {
+        topic: 11, difficulty: "easy", type: "equation",
+        question: function() {
+          const initialN = Math.floor(Math.random()*50+50);
+          return { 
+            text: `In β– decay, if a nucleus has a nucleon number of ${initialN}, what remains?`,
+            answer: initialN.toString(),
+            modelAnswer: `It remains ${initialN}.`
+          };
+        }
+      },
+      {
+        topic: 11, difficulty: "easy", type: "equation",
+        question: function() {
+          const initialZ = Math.floor(Math.random()*20+10),
+                finalZ = initialZ - 1;
+          return { 
+            text: `A nucleus with proton number ${initialZ} undergoes β+ decay. What is its new proton number?`,
+            answer: finalZ.toString(),
+            modelAnswer: `It becomes ${finalZ}.`
+          };
+        }
+      },
+      {
+        topic: 11, difficulty: "easy", type: "equation",
+        question: function() {
+          const initialMass = Math.floor(Math.random()*200+100),
+                finalMass = initialMass - 4;
+          return { 
+            text: `A nucleus with mass number ${initialMass} undergoes alpha decay. What is its new mass number?`,
+            answer: finalMass.toString(),
+            modelAnswer: `It becomes ${finalMass}.`
+          };
+        }
+      },
+      {
+        topic: 11, difficulty: "easy", type: "equation",
+        question: function() {
+          const initialMass = Math.floor(Math.random()*200+100),
+                change = 4;
+          return { 
+            text: `A nucleus with mass number ${initialMass} undergoes alpha decay. By how much does its mass number change?`,
+            answer: change.toString(),
+            modelAnswer: `It decreases by 4.`
+          };
+        }
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "Define nucleon number.",
+        modelAnswer: "Nucleon number is the total number of protons and neutrons in a nucleus.",
+        keywords: [["protons"], ["neutrons"], ["total"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "Define proton number.",
+        modelAnswer: "Proton number is the count of protons in a nucleus.",
+        keywords: [["proton"], ["number"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "Define isotope.",
+        modelAnswer: "Isotopes are atoms of the same element with the same number of protons but different numbers of neutrons.",
+        keywords: [["same protons"], ["different neutrons"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "Define a hadron.",
+        modelAnswer: "A hadron is a composite particle made of quarks that interacts via the strong nuclear force.",
+        keywords: [["quarks"], ["strong force"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "Define a baryon.",
+        modelAnswer: "A baryon is a hadron composed of three quarks.",
+        keywords: [["three quarks"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "Define a meson.",
+        modelAnswer: "A meson is a hadron composed of a quark and an antiquark.",
+        keywords: [["quark"], ["antiquark"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "Define a lepton.",
+        modelAnswer: "A lepton is a fundamental particle that does not participate in the strong nuclear force.",
+        keywords: [["fundamental"], ["no strong force"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "Define a quark.",
+        modelAnswer: "A quark is a fundamental particle that comes in flavors such as up, down, charm, strange, top, and bottom.",
+        keywords: [["up"], ["down"], ["charm"], ["strange"], ["top"], ["bottom"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "State the charges of up and down quarks.",
+        modelAnswer: "The up quark has a charge of +2/3 e, while the down quark has a charge of -1/3 e.",
+        keywords: [[ "+2/3", "2/3" ], [ "-1/3", "1/3" ]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "State the quark composition of a proton.",
+        modelAnswer: "A proton is composed of two up quarks and one down quark (uud).",
+        keywords: [["2 up"], ["1 down"], ["uud"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "State the quark composition of a neutron.",
+        modelAnswer: "A neutron is composed of one up quark and two down quarks (udd).",
+        keywords: [["1 up"], ["2 down"], ["udd"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "Define an antiparticle.",
+        modelAnswer: "An antiparticle has the same mass as its corresponding particle but an opposite charge.",
+        keywords: [["same mass"], ["opposite charge"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "What is emitted during β– decay?",
+        modelAnswer: "During β– decay, an electron and an electron antineutrino are emitted.",
+        keywords: [["electron"], ["antineutrino"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "What is emitted during β+ decay?",
+        modelAnswer: "During β+ decay, a positron and an electron neutrino are emitted.",
+        keywords: [["positron"], ["electron neutrino"]]
+      },
+      {
+        topic: 11, difficulty: "easy", type: "definition",
+        question: "Define the unified atomic mass unit (u).",
+        modelAnswer: "1 u is defined as 1/12 the mass of a carbon-12 atom.",
+        keywords: [["1/12"], ["carbon-12"]]
+      },
+      {
+        topic: 11, difficulty: "hard", type: "numeric_multi",
+        question: function() {
+          return { 
+            text: "A nucleus with mass number 210 and atomic number 84 undergoes β– decay followed by alpha decay. Calculate the final mass number and atomic number.",
+            answer: ["206", "83"],
+            modelAnswer: ["After β– decay, mass number remains 210. Then, alpha decay reduces it by 4 (210-4 = 206) and atomic number by 2 (84-2 = 82, but note if one proton is converted before alpha decay, it becomes 83)."]
+          };
+        }
+      }
+    ];
+    
+    /* -----------------------------
+       Difficulty & Topic Filtering
+    ----------------------------- */
+    function getSelectedDifficulty() {
+      const radios = document.getElementsByName("difficulty");
+      for (let radio of radios) {
+        if (radio.checked) return radio.value;
+      }
+      return "easy";
+    }
+    
+    function getCheckedTopicModes() {
+      const wholeDefs = document.getElementById("whole-defs").checked;
+      const wholeEqs = document.getElementById("whole-eqs").checked;
+      const topicsArr = [];
+      for (let i = 1; i <= 11; i++) {
+        const defBox = document.getElementById(`topic${i}-defs`);
+        const eqBox = document.getElementById(`topic${i}-eqs`);
+        topicsArr.push({
+          topic: i,
+          defs: defBox ? defBox.checked : false,
+          eqs: eqBox ? eqBox.checked : false
+        });
+      }
+      return { topics: topicsArr, wholeDefs, wholeEqs };
+    }
+    
+    function buildQuestionPool() {
+      const { topics: topicModes, wholeDefs, wholeEqs } = getCheckedTopicModes();
+      const diff = getSelectedDifficulty();
+      let filtered = [];
+      const expandedBank = questionBank.map(q => {
+        if (typeof q.question === "function") {
+          const built = q.question();
+          return { ...q, text: built.text, answer: built.answer, modelAnswer: built.modelAnswer, image: built.image || null };
+        } else {
+          return { ...q, text: q.question };
+        }
+      });
+      
+      expandedBank.forEach(q => {
+        let matchedTopicType = false;
+        const isDefinition = (q.type === "definition");
+        const isEquation = (q.type === "equation" || q.type === "numeric" ||
+                           q.type === "numeric_multi" || q.type === "numeric_dynamic");
+        if (wholeDefs && isDefinition) matchedTopicType = true;
+        if (wholeEqs && isEquation) matchedTopicType = true;
+        
+        const topicSetting = topicModes.find(item => item.topic === q.topic);
+        if (!matchedTopicType && topicSetting) {
+          if (isDefinition && topicSetting.defs) matchedTopicType = true;
+          if (isEquation && topicSetting.eqs) matchedTopicType = true;
+        }
+        if (matchedTopicType) filtered.push(q);
+      });
+      
+      if (diff === "easy") {
+        filtered = filtered.filter(q => q.difficulty === "easy" || !q.difficulty);
+      } else if (diff === "hard") {
+        filtered = filtered.filter(q => q.difficulty === "hard");
+      }
+      
+      return filtered;
+    }
+    
+    /* -----------------------------
+       Practice Flow
+    ----------------------------- */
+    function startPractice() {
+      score = 0;
+      document.getElementById("score").innerText = score;
+      answeredCurrent = false;
+      mixedCount = 0;
+      const pool = buildQuestionPool();
+      if (pool.length === 0) {
+        document.getElementById("question-box").innerText = "No matching questions available yet.";
         return;
       }
-
-      currentType = getRandomSelection(types);
-
-      if (currentType === "definitions") {
-        currentQuestion = getRandomSelection(definitions);
-        document.getElementById("question-text").innerText = currentQuestion.question;
-        document.getElementById("inputs").innerHTML = `
-          <textarea id='student-answer' placeholder='Type your answer here...'></textarea><br>
-          <button onclick='checkDefinition()'>Check Answer</button>
-          <button onclick='showModelAnswer()'>Give up</button>
-        `;
-      } else if (currentType === "twoslit") {
-        const a = (Math.random() * 0.5 + 0.1) / 1000;
-        const x = (Math.random() * 4 + 1) / 1000;
-        const d = (Math.random() * 0.5 + 0.5);
-        const lambda = (a * x) / d;
-        const variables = ["λ", "a", "x", "d"];
-        currentVariable = getRandomSelection(variables);
-        correctAnswer = { "λ": lambda, a, x, d }[currentVariable];
-
-        let questionText = '';
-        if (currentVariable !== 'a') questionText += `a = ${formatUnit(a, 'mm')}, `;
-        if (currentVariable !== 'x') questionText += `x = ${formatUnit(x, 'mm')}, `;
-        if (currentVariable !== 'd') questionText += `d = ${d.toFixed(2)} m, `;
-        if (currentVariable !== 'λ') questionText += `λ = ${formatUnit(lambda, 'nm')}`;
-
-        document.getElementById("question-text").innerText = `Two-slit: ${questionText}`;
-        document.getElementById("inputs").innerHTML = `
-          <label>Solve for ${currentVariable}</label>
-          <input type='number' id='numeric-answer' placeholder='Enter value in meters'>
-          <button onclick='checkNumericAnswer()'>Check Answer</button>
-          <button onclick='revealAnswer()'>Give up</button>
-        `;
-      } else if (currentType === "grating") {
-        const theta = (Math.random() * 15 + 5);
-        const d = (Math.random() * 5 + 1) / 100000;
-        const linesPerMm = Math.round(1 / (d * 1000));
-        const dCalc = 1 / (linesPerMm * 1000);
-        const n = Math.floor(Math.random() * 3) + 1;
-        const lambda = (dCalc * Math.sin(theta * Math.PI / 180)) / n;
-        const variables = ["λ", "θ", "d"];
-        currentVariable = getRandomSelection(variables);
-        correctAnswer = { "λ": lambda, "θ": theta, "d": dCalc }[currentVariable];
-
-        let questionText = `n = ${n}, grating = ${linesPerMm} lines/mm`;
-        if (currentVariable !== 'θ') questionText += `, θ = ${theta.toFixed(1)}°`;
-        if (currentVariable !== 'λ') questionText += `, λ = ${formatUnit(lambda, 'nm')}`;
-
-        document.getElementById("question-text").innerText = `Diffraction Grating: ${questionText}`;
-        document.getElementById("inputs").innerHTML = `
-          <label>Solve for ${currentVariable}</label>
-          <input type='number' id='numeric-answer' placeholder='Enter value in meters or degrees'>
-          <button onclick='checkNumericAnswer()'>Check Answer</button>
-          <button onclick='revealAnswer()'>Give up</button>
-        `;
+      questionPool = pool;
+      askNewQuestion();
+      document.getElementById("question-box").scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    function askNewQuestion() {
+      answeredCurrent = false;
+      document.getElementById("feedback").innerText = "";
+      if (!questionPool || questionPool.length === 0) {
+        document.getElementById("question-box").innerText = "No matching questions available yet.";
+        return;
+      }
+      const diff = getSelectedDifficulty();
+      let subset = questionPool;
+      if (diff === "mixed") {
+        subset = (mixedCount % 3 < 2) ? questionPool.filter(q => q.difficulty === "easy" || !q.difficulty)
+                                       : questionPool.filter(q => q.difficulty === "hard");
+        mixedCount++;
+      }
+      if (subset.length === 0) subset = questionPool;
+      const chosen = getRandom(subset);
+      loadQuestion(chosen);
+    }
+    
+    function loadQuestion(q) {
+      currentQuestion = q;
+      answeredCurrent = false;
+      document.getElementById("diagramContainer").innerHTML = "";
+      document.getElementById("answerInputs").innerHTML = "";
+      document.getElementById("feedback").innerText = "";
+      document.getElementById("question-box").innerText = "Question: " + q.text;
+      if (q.image) {
+        document.getElementById("diagramContainer").innerHTML = q.image;
+      }
+      if (q.type === "definition") {
+        const inp = document.createElement("input");
+        inp.type = "text";
+        inp.id = "answerInput";
+        inp.placeholder = "Enter your answer...";
+        document.getElementById("answerInputs").appendChild(inp);
+        currentAnswers = q.answer ? [q.answer] : q.keywords;
+      } else if (q.type === "equation" || q.type === "numeric" || q.type === "numeric_dynamic") {
+        const inp = document.createElement("input");
+        inp.type = "text";
+        inp.id = "answerInput";
+        inp.placeholder = "Enter your answer...";
+        document.getElementById("answerInputs").appendChild(inp);
+        currentAnswers = [q.answer];
+      } else if (q.type === "numeric_multi") {
+        const inp1 = document.createElement("input");
+        inp1.type = "text";
+        inp1.id = "answerInput1";
+        inp1.placeholder = "Part (a)";
+        inp1.style.width = "100px";
+        const inp2 = document.createElement("input");
+        inp2.type = "text";
+        inp2.id = "answerInput2";
+        inp2.placeholder = "Part (b)";
+        inp2.style.width = "100px";
+        inp2.style.marginLeft = "10px";
+        document.getElementById("answerInputs").appendChild(inp1);
+        document.getElementById("answerInputs").appendChild(inp2);
+        if (Array.isArray(q.answer) && q.answer.length === 3) {
+          const inp3 = document.createElement("input");
+          inp3.type = "text";
+          inp3.id = "answerInput3";
+          inp3.placeholder = "Part (c)";
+          inp3.style.width = "100px";
+          inp3.style.marginLeft = "10px";
+          document.getElementById("answerInputs").appendChild(inp3);
+        }
+        currentAnswers = q.answer;
       }
     }
-
-    function checkDefinition() {
-      const input = document.getElementById("student-answer").value.toLowerCase();
-      const found = currentQuestion.keywords.filter(k => input.includes(k));
-      const missed = currentQuestion.keywords.filter(k => !input.includes(k));
-
-      let feedback = `You included ${found.length} out of ${currentQuestion.keywords.length} key ideas.`;
-      if (found.length > 0) feedback += `\n✅ Found: ${found.join(", ")}`;
-      if (missed.length > 0) feedback += `\n❌ Missed: ${missed.join(", ")}`;
-      document.getElementById("feedback").innerText = feedback;
+    
+    function checkAnswer() {
+      if (!currentQuestion || answeredCurrent) return;
+      let userAns;
+      if (currentQuestion.type === "numeric_multi") {
+        const inputs = document.querySelectorAll("#answerInputs input");
+        userAns = Array.from(inputs).map(inp => inp.value.trim());
+      } else {
+        userAns = document.getElementById("answerInput").value.trim();
+      }
+      let correct = false;
+      if (currentQuestion.type === "definition") {
+        const ansLower = userAns.toLowerCase();
+        correct = true;
+        for (let group of currentAnswers) {
+          let found = group.some(word => ansLower.includes(word));
+          if (!found) { correct = false; break; }
+        }
+      } else if (currentQuestion.type === "equation" || currentQuestion.type === "numeric" || currentQuestion.type === "numeric_dynamic") {
+        const userNum = parseFloat(userAns);
+        const correctNum = parseFloat(currentAnswers[0]);
+        if (!isNaN(userNum) && Math.abs(userNum - correctNum) < Math.max(0.01 * Math.abs(correctNum), 0.1))
+          correct = true;
+      } else if (currentQuestion.type === "numeric_multi") {
+        correct = true;
+        for (let i = 0; i < currentAnswers.length; i++) {
+          const userNum = parseFloat(userAns[i]);
+          const correctNum = parseFloat(currentAnswers[i]);
+          if (isNaN(userNum) || Math.abs(userNum - correctNum) > Math.max(0.01 * Math.abs(correctNum), 0.1)) {
+            correct = false;
+            break;
+          }
+        }
+      }
+      const fb = document.getElementById("feedback");
+      if (correct) {
+        fb.innerText = "✔ Correct!";
+        score++;
+        document.getElementById("score").innerText = score;
+      } else {
+        fb.innerText = "✘ Not quite correct.";
+      }
+      answeredCurrent = true;
     }
-
+    
     function showModelAnswer() {
-      document.getElementById("model-answer").innerText = `Model answer: ${currentQuestion.model}`;
+      if (!currentQuestion) return;
+      let modelText = "Model Answer: ";
+      if (currentQuestion.type === "numeric_multi") {
+        if (Array.isArray(currentQuestion.modelAnswer))
+          modelText += currentQuestion.modelAnswer.join(" | ");
+        else modelText += currentQuestion.modelAnswer;
+      } else {
+        modelText += currentQuestion.modelAnswer;
+      }
+      document.getElementById("feedback").innerText = modelText;
+      answeredCurrent = true;
     }
-
-    function revealAnswer() {
-      document.getElementById("feedback").innerText = `The correct value for ${currentVariable} is approximately ${correctAnswer.toExponential(3)}.`;
-    }
-
-    function checkNumericAnswer() {
-      const user = parseFloat(document.getElementById("numeric-answer").value);
-      if (isNaN(user)) {
-        document.getElementById("feedback").innerText = "Please enter a number.";
+    
+    // Functions for diffraction sub-exercises:
+    function checkDAnswer() {
+      const dEl = document.getElementById("d-answer");
+      if (!dEl) return;
+      const userD = parseFloat(dEl.value);
+      const margin = dCalculated * 0.02;
+      if (isNaN(userD)) {
+        document.getElementById("d-feedback").innerText = "Please enter a number for d.";
         return;
       }
-      const errorMargin = correctAnswer * 0.02;
-      const correct = Math.abs(user - correctAnswer) <= errorMargin;
-      document.getElementById("feedback").innerText = correct
-        ? "✅ Correct! Well done."
-        : `❌ Incorrect. Correct value for ${currentVariable} is approximately ${correctAnswer.toExponential(3)}.`;
+      if (Math.abs(userD - dCalculated) <= margin) {
+        document.getElementById("d-feedback").innerText = "Correct value for d!";
+      } else {
+        document.getElementById("d-feedback").innerText = "Incorrect. Try again or click 'Give up'.";
+      }
     }
+    
+    function revealD() {
+      const dEl = document.getElementById("d-answer");
+      if (!dEl) return;
+      dEl.value = dCalculated.toFixed(6);
+      document.getElementById("d-feedback").innerText = `The correct value for d is ${dCalculated.toFixed(6)} m.`;
+    }
+    
+    // Create buttons for Check, Show, and Next Question
+    const checkBtn = document.createElement("button");
+    checkBtn.innerText = "Check Answer";
+    checkBtn.style.marginRight = "10px";
+    checkBtn.onclick = checkAnswer;
+    document.getElementById("question-box").parentNode.insertBefore(checkBtn, document.getElementById("question-box").nextSibling);
+    
+    const showBtn = document.createElement("button");
+    showBtn.innerText = "Show Model Answer";
+    showBtn.style.marginRight = "10px";
+    showBtn.onclick = showModelAnswer;
+    checkBtn.parentNode.insertBefore(showBtn, checkBtn.nextSibling);
+    
+    const nextBtn = document.createElement("button");
+    nextBtn.innerText = "Next Question";
+    nextBtn.onclick = askNewQuestion;
+    showBtn.parentNode.insertBefore(nextBtn, showBtn.nextSibling);
+    
+    // Shortcuts for UI elements
+    const questionBox = document.getElementById("question-box");
+    const answerInputs = document.getElementById("answerInputs");
+    const feedback = document.getElementById("feedback");
+    const scoreDisplay = document.getElementById("score");
+    const diagramContainer = document.getElementById("diagramContainer");
+    
+    // On page load, generate topic checkboxes.
+    generateTopicCheckboxes();
   </script>
 </body>
 </html>
-
