@@ -83,15 +83,6 @@
   <!-- Feedback area -->
   <div id="feedback" style="font-weight: bold; margin-top: 10px;"></div>
   
-  <!-- Diffraction sub-exercise elements (if needed) -->
-  <!-- These elements could be positioned where appropriate -->
-  <div id="d-exercise" style="margin-top:20px;">
-    <input type="text" id="d-answer" placeholder="Enter d value...">
-    <button onclick="checkDAnswer()">Check d</button>
-    <button onclick="revealD()">Give up</button>
-    <div id="d-feedback" style="font-weight: bold; margin-top: 5px;"></div>
-  </div>
-  
   <!-- Difficulty Panel -->
   <div id="difficulty-container">
     <h3>Select Difficulty</h3>
@@ -113,7 +104,6 @@
     let score = 0;                // User score
     let mixedCount = 0;           // For "I'm Getting There" mode (2 easy : 1 hard)
     // (For diffraction sub-exercises)
-    let dCalculated = 0; // this would be set dynamically in any diffraction question
 
     // Utility: Ordinal suffix for harmonic questions
     function ordinalSuffix(n) {
@@ -905,6 +895,43 @@
           };
         }
       },
+      {
+  topic: 7,  difficulty: "hard",  type: "equation",
+  question: function() {
+    // Choose a random pipe length between 0.50 and 2.00 m and a speed of sound between 330 and 340 m/s.
+    const L = (Math.random() * 1.5 + 0.5).toFixed(2);
+    const v = Math.floor(Math.random() * 11 + 330); 
+    // For a pipe closed at one end, the fundamental mode has a wavelength of λ = 4L
+    const lambda = 4 * L;
+    // Therefore, the fundamental frequency is f = v / λ
+    const f = v / lambda;
+    return {
+      text: `A pipe closed at one end has a length of ${L} m. Given that the speed of sound is ${v} m/s, calculate its fundamental frequency.`,
+      answer: f.toFixed(2) + " Hz",
+      modelAnswer: `For a pipe closed at one end, the fundamental mode supports a quarter wavelength (λ/4) in the pipe. This means that the full wavelength is λ = 4L. The frequency is then given by f = v/λ. Substituting the values, λ = 4 × ${L} m and f = ${v} / (4 × ${L}) ≈ ${f.toFixed(2)} Hz.`
+    };
+  }
+}
+      {
+  topic: 7,
+  difficulty: "hard",
+  type: "numeric_multi",
+  question: function() {
+    // Choose a random string length between 0.50 and 2.00 m and a wave speed between 100 and 130 m/s.
+    const L = (Math.random() * 1.5 + 0.5).toFixed(2);
+    const v = Math.floor(Math.random() * 31 + 100);
+    const n = Math.floor(Math.random() * 5) + 1; // Random harmonic number between 1 and 5
+    // For a string fixed at both ends, the wavelength is λ = 2L/n
+    const lambda = 2 * L / n;
+    // And frequency is given by f = v/λ = n*v/(2L)
+    const f = n * v / (2 * L);
+    return {
+      text: `A string of length ${L} m is fixed at both ends and vibrates in its ${n}${ordinalSuffix(n)} harmonic mode. Given that the wave speed on the string is ${v} m/s, calculate: (a) the wavelength of the standing wave and (b) its frequency.`,
+      answer: [lambda.toFixed(2) + " m", f.toFixed(2) + " Hz"],
+      modelAnswer: `For a string fixed at both ends, standing waves occur with wavelengths given by λ = 2L/n, where n is the harmonic number. In this case, n = ${n} so λ = 2L/${n}. The frequency is then f = v/λ = (n×v)/(2L). Substituting the values, λ = 2 × ${L} / ${n} ≈ ${lambda.toFixed(2)} m and f = ${n} × ${v} / (2 × ${L}) ≈ ${f.toFixed(2)} Hz.`
+    };
+  }
+}
       // New question: Speaker-Microphone
       {
         topic: 7, difficulty: "hard", type: "equation",
@@ -930,7 +957,7 @@
           return {
             text: `A diffraction grating has a spacing of ${d} m. A bright fringe of order ${m} is observed at ${theta}°. Calculate the wavelength of the light.`,
             answer: lambda.toFixed(7) + " m",
-            modelAnswer: `Using d*sinθ = mλ, λ = ${d}*sin(${theta}°)/${m} ≈ ${lambda.toFixed(7)} m.`
+            modelAnswer: `Using d*sinθ = nλ, we have λ = ${d}*sin(${theta}°)/${m} ≈ ${lambda.toFixed(7)} m. (Note: If the grating specification is given in lines per mm, convert it to d in meters first.)`.`
           };
         }
       },
@@ -1743,29 +1770,7 @@
       answeredCurrent = true;
     }
     
-    // Functions for diffraction sub-exercises:
-    function checkDAnswer() {
-      const dEl = document.getElementById("d-answer");
-      if (!dEl) return;
-      const userD = parseFloat(dEl.value);
-      const margin = dCalculated * 0.02;
-      if (isNaN(userD)) {
-        document.getElementById("d-feedback").innerText = "Please enter a number for d.";
-        return;
-      }
-      if (Math.abs(userD - dCalculated) <= margin) {
-        document.getElementById("d-feedback").innerText = "Correct value for d!";
-      } else {
-        document.getElementById("d-feedback").innerText = "Incorrect. Try again or click 'Give up'.";
-      }
-    }
-    
-    function revealD() {
-      const dEl = document.getElementById("d-answer");
-      if (!dEl) return;
-      dEl.value = dCalculated.toFixed(6);
-      document.getElementById("d-feedback").innerText = `The correct value for d is ${dCalculated.toFixed(6)} m.`;
-    }
+ 
     
     // Create buttons for Check, Show, and Next Question
     const checkBtn = document.createElement("button");
