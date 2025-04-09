@@ -103,7 +103,7 @@
     let currentAnswers = null;    // Expected answer(s) or keyword groups
     let score = 0;                // User score
     let mixedCount = 0;           // For "I'm Getting There" mode (2 easy : 1 hard)
-    // (For diffraction sub-exercises)
+    let questionPool = [];        // <-- Newly declared global variable
 
     // Utility: Ordinal suffix for harmonic questions
     function ordinalSuffix(n) {
@@ -141,12 +141,14 @@
       const right = document.getElementById("topic-columns-right");
       topics.forEach((name, i) => {
         const topicNum = i + 1;
-        const block = 
-          `<h3>${topicNum}. ${name}</h3>
+        const block = `<h3>${topicNum}. ${name}</h3>
           <label><input type="checkbox" id="topic${topicNum}-defs"> Definitions</label>
           <label><input type="checkbox" id="topic${topicNum}-eqs"> Equations</label>`;
-        if (i % 2 === 0) left.innerHTML += block;
-        else right.innerHTML += block;
+        if (i % 2 === 0) {
+          left.innerHTML += block;
+        } else {
+          right.innerHTML += block;
+        }
       });
     }
 
@@ -717,21 +719,21 @@
       {
         topic: 6, difficulty: "easy", type: "equation",
         question: function() {
-          const stress = Math.floor(Math.random()*10+5),
-                strain = Math.random()*0.01+0.001,
+          const stress = Math.floor(Math.random() * 10 + 5),
+                strain = Math.random() * 0.01 + 0.001,
                 E = stress / strain;
           return { 
             text: `A material has a stress of ${stress} MPa and a strain of ${strain.toFixed(4)}. Calculate its Young's modulus in GPa.`,
-            answer: (E/1000).toFixed(2),
-            modelAnswer: `E ≈ ${(E).toFixed(2)} MPa, which is ≈ ${(E/1000).toFixed(2)} GPa.`
+            answer: (E / 1000).toFixed(2),
+            modelAnswer: `E ≈ ${(E).toFixed(2)} MPa, which is ≈ ${(E / 1000).toFixed(2)} GPa.`
           };
         }
       },
       {
         topic: 6, difficulty: "easy", type: "equation",
         question: function() {
-          const k = Math.floor(Math.random()*200+100),
-                F = Math.floor(Math.random()*50+10),
+          const k = Math.floor(Math.random() * 200 + 100),
+                F = Math.floor(Math.random() * 50 + 10),
                 extension = F / k;
           return { 
             text: `A spring with constant ${k} N/m is pulled by a force of ${F} N. Calculate its extension.`,
@@ -743,8 +745,8 @@
       {
         topic: 6, difficulty: "easy", type: "equation",
         question: function() {
-          const L0 = Math.floor(Math.random()*50+50),
-                ext = (Math.floor(Math.random()*5+1))/100,
+          const L0 = Math.floor(Math.random() * 50 + 50),
+                ext = (Math.floor(Math.random() * 5 + 1)) / 100,
                 strain = ext / (L0 / 100);
           return { 
             text: `A rod of length ${L0} cm is extended by ${ext.toFixed(2)} m. Calculate the strain.`,
@@ -779,7 +781,7 @@
           const strain = stress / E;
           const elongation = length * strain;
           return { 
-            text: `A rod of length ${length} m and area ${area} m² is subjected to a force of ${force} N. With E = ${E/1e9} GPa, calculate: (a) stress in Pa, (b) strain, and (c) elongation in m.`,
+            text: `A rod of length ${length} m and area ${area} m² is subjected to a force of ${force} N. With E = ${E / 1e9} GPa, calculate: (a) stress in Pa, (b) strain, and (c) elongation in m.`,
             answer: [stress.toExponential(2) + " Pa", strain.toExponential(2), elongation.toExponential(2) + " m"],
             modelAnswer: [
               `Stress ≈ ${stress.toExponential(2)} Pa,`,
@@ -794,493 +796,9 @@
       {
         topic: 7, difficulty: "easy", type: "equation",
         question: function() {
-          const n = Math.floor(Math.random()*3+1),
-                L = Math.floor(Math.random()*3+1),
-                v = Math.floor(Math.random()*200+100),
-                f = (n * v) / (2 * L);
-          return { 
-            text: `A pipe closed at both ends, of length ${L} m, vibrates in its ${ordinalSuffix(n)} harmonic. Find its frequency.`,
-            answer: f.toFixed(1),
-            modelAnswer: `Frequency ≈ ${f.toFixed(1)} Hz (using f = n*v/(2*L)).`
-          };
-        }
-      },
-      {
-        topic: 7, difficulty: "easy", type: "equation",
-        question: function() {
-          const d = (Math.floor(Math.random()*4+1))/1000,
-                D = Math.floor(Math.random()*100+100),
-                x = (Math.floor(Math.random()*20+10))/1000,
-                lambda = (d * x) / (D/100);
-          return { 
-            text: `In a two-slit experiment with a slit separation of ${(d*1000).toFixed(1)} mm, screen distance ${D} cm, and fringe spacing ${(x*1000).toFixed(1)} mm, calculate the wavelength of the light.`,
-            answer: (lambda * 1e9).toFixed(6) + " m",
-            modelAnswer: `Wavelength λ ≈ ${(lambda*1e9).toFixed(6)} m.`
-          };
-        }
-      },
-      {
-        topic: 7, difficulty: "easy", type: "equation",
-        question: function() {
-          const L = Math.floor(Math.random()*3+1),
-                v = Math.floor(Math.random()*100+300),
-                f = v/(2*L),
-                T = 1/f;
-          return { 
-            text: `A pipe open at both ends, of length ${L} m, vibrates. (a) Find the fundamental frequency and (b) the time period.`,
-            answer: [f.toFixed(1), T.toFixed(3)],
-            modelAnswer: `Fundamental frequency f ≈ ${f.toFixed(1)} Hz; Time period T ≈ ${T.toFixed(3)} s.`,
-            type: "numeric_multi",
-            multi: true
-          };
-        }
-      },
-      {
-        topic: 7, difficulty: "easy", type: "definition",
-        question: "Define wavelength.",
-        modelAnswer: "Wavelength is the distance between successive points on a wave that are in phase.",
-        keywords: [["distance"], ["successive"], ["in phase"]]
-      },
-      {
-        topic: 7, difficulty: "easy", type: "definition",
-        question: "Define frequency.",
-        modelAnswer: "Frequency is the number of oscillations per second.",
-        keywords: [["oscillations"], ["per second", "Hz"]]
-      },
-      {
-        topic: 7, difficulty: "easy", type: "definition",
-        question: "Define wavefront.",
-        modelAnswer: "A wavefront is a line connecting points on a wave that are in the same phase.",
-        keywords: [["line"], ["same phase"]]
-      },
-      {
-        topic: 7, difficulty: "hard", type: "numeric_multi",
-        question: function() {
-          const L = 2, v = 305, f = v/(4*L), T = 1/f;
-          return { 
-            text: `A pipe closed at one end, of length ${L} m, vibrates with a speed of sound ${v} m/s. Calculate: (a) its fundamental frequency, (b) its time period, and (c) verify that f×T ≈ 1.`,
-            answer: [f.toFixed(1), T.toFixed(3), (f*T).toFixed(2)],
-            modelAnswer: [
-              `Fundamental frequency f ≈ ${f.toFixed(1)} Hz,`,
-              `Time period T ≈ ${T.toFixed(3)} s,`,
-              `f×T ≈ ${(f*T).toFixed(2)} (≈ 1).`
-            ],
-            multi: true
-          };
-        }
-      },
-      // New definition: Standing wave
-      {
-        topic: 7, difficulty: "easy", type: "definition",
-        question: "Define a standing wave.",
-        modelAnswer: "A standing wave is formed by the combination of two waves moving in opposite directions with similar amplitude and the same frequency.",
-        keywords: [["two waves"], ["opposite directions"], ["similar amplitude"], ["same frequency", "coherent"]]
-      },
-      // New question: Open pipe standing wave
-      {
-        topic: 7, difficulty: "hard", type: "numeric_multi",
-        question: function() {
-          const L = Math.floor(Math.random()*3+1); // length in m
-          const n = Math.floor(Math.random()*3+1); // harmonic mode (n half wavelengths)
-          const v = Math.floor(Math.random()*50+330); // speed of sound in m/s
-          const lambda = 2 * L / n;
-          const f = v / lambda;
-          return {
-            text: `An open pipe of length ${L} m vibrates in its ${n}${ordinalSuffix(n)} harmonic mode. Given the speed of sound is ${v} m/s, calculate: (a) the wavelength and (b) the frequency of the standing wave.`,
-            answer: [lambda.toFixed(2) + " m", f.toFixed(2) + " Hz"],
-            modelAnswer: [
-              `Wavelength λ = 2L/n = 2×${L}/${n} ≈ ${lambda.toFixed(2)} m,`,
-              `Frequency f = v/λ = ${v}/${lambda.toFixed(2)} ≈ ${f.toFixed(2)} Hz.`
-            ]
-          };
-        }
-      },
-      {
-  topic: 7,  difficulty: "hard",  type: "equation",
-  question: function() {
-    // Choose a random pipe length between 0.50 and 2.00 m and a speed of sound between 330 and 340 m/s.
-    const L = (Math.random() * 1.5 + 0.5).toFixed(2);
-    const v = Math.floor(Math.random() * 11 + 330); 
-    // For a pipe closed at one end, the fundamental mode has a wavelength of λ = 4L
-    const lambda = 4 * L;
-    // Therefore, the fundamental frequency is f = v / λ
-    const f = v / lambda;
-    return {
-      text: `A pipe closed at one end has a length of ${L} m. Given that the speed of sound is ${v} m/s, calculate its fundamental frequency.`,
-      answer: f.toFixed(2) + " Hz",
-      modelAnswer: `For a pipe closed at one end, the fundamental mode supports a quarter wavelength (λ/4) in the pipe. This means that the full wavelength is λ = 4L. The frequency is then given by f = v/λ. Substituting the values, λ = 4 × ${L} m and f = ${v} / (4 × ${L}) ≈ ${f.toFixed(2)} Hz.`
-    };
-  }
-}
-      {
-  topic: 7,
-  difficulty: "hard",
-  type: "numeric_multi",
-  question: function() {
-    // Choose a random string length between 0.50 and 2.00 m and a wave speed between 100 and 130 m/s.
-    const L = (Math.random() * 1.5 + 0.5).toFixed(2);
-    const v = Math.floor(Math.random() * 31 + 100);
-    const n = Math.floor(Math.random() * 5) + 1; // Random harmonic number between 1 and 5
-    // For a string fixed at both ends, the wavelength is λ = 2L/n
-    const lambda = 2 * L / n;
-    // And frequency is given by f = v/λ = n*v/(2L)
-    const f = n * v / (2 * L);
-    return {
-      text: `A string of length ${L} m is fixed at both ends and vibrates in its ${n}${ordinalSuffix(n)} harmonic mode. Given that the wave speed on the string is ${v} m/s, calculate: (a) the wavelength of the standing wave and (b) its frequency.`,
-      answer: [lambda.toFixed(2) + " m", f.toFixed(2) + " Hz"],
-      modelAnswer: `For a string fixed at both ends, standing waves occur with wavelengths given by λ = 2L/n, where n is the harmonic number. In this case, n = ${n} so λ = 2L/${n}. The frequency is then f = v/λ = (n×v)/(2L). Substituting the values, λ = 2 × ${L} / ${n} ≈ ${lambda.toFixed(2)} m and f = ${n} × ${v} / (2 × ${L}) ≈ ${f.toFixed(2)} Hz.`
-    };
-  }
-}
-      // New question: Speaker-Microphone
-      {
-        topic: 7, difficulty: "hard", type: "equation",
-        question: function() {
-          const d = (Math.random()*0.5 + 0.2).toFixed(2); // spacing in m
-          const v = Math.floor(Math.random()*50 + 330); // speed of sound, m/s
-          const f = v / (2*d); // distance between loud points = half wavelength
-          return {
-            text: `A speaker faces a wall with a microphone between them. As the microphone is moved, it passes through loud points spaced ${d} m apart. Given the speed of sound is ${v} m/s, calculate the frequency.`,
-            answer: f.toFixed(2) + " Hz",
-            modelAnswer: `Half wavelength = ${d} m, so full wavelength = ${ (2*d).toFixed(2) } m and frequency f = ${v} / (${2*d}) ≈ ${f.toFixed(2)} Hz.`
-          };
-        }
-      },
-      // New question: Diffraction grating
-      {
-        topic: 7, difficulty: "hard", type: "equation",
-        question: function() {
-          const d = (Math.random()*0.00001 + 0.000005).toFixed(7); // grating spacing in m
-          const m = Math.floor(Math.random()*3) + 1; // order
-          const theta = Math.floor(Math.random()*30+10); // in degrees
-          const lambda = (d * Math.sin(theta * Math.PI/180)) / m;
-          return {
-            text: `A diffraction grating has a spacing of ${d} m. A bright fringe of order ${m} is observed at ${theta}°. Calculate the wavelength of the light.`,
-            answer: lambda.toFixed(7) + " m",
-            modelAnswer: `Using d*sinθ = nλ, we have λ = ${d}*sin(${theta}°)/${m} ≈ ${lambda.toFixed(7)} m. (Note: If the grating specification is given in lines per mm, convert it to d in meters first.)`
-          };
-        }
-      },
-      
-      // --- Topic 9: Electricity ---
-      {
-        topic: 9, difficulty: "easy", type: "equation",
-        question: function() {
-          const I = Math.floor(Math.random()*5+1),
-                R = Math.floor(Math.random()*20+10),
-                V = I * R;
-          return { 
-            text: `A current of ${I} A flows through a ${R} Ω resistor. Find the voltage.`,
-            answer: V.toFixed(1),
-            modelAnswer: `V ≈ ${I} × ${R} ≈ ${V.toFixed(1)} V.`
-          };
-        }
-      },
-      {
-        topic: 9, difficulty: "easy", type: "equation",
-        question: function() {
-          const V = Math.floor(Math.random()*20+10),
-                I = Math.floor(Math.random()*5+1),
-                P = V * I;
-          return { 
-            text: `Find the power for a circuit with ${V} V and ${I} A.`,
-            answer: P.toFixed(1),
-            modelAnswer: `Power ≈ ${V} × ${I} ≈ ${P.toFixed(1)} W.`
-          };
-        }
-      },
-      {
-        topic: 9, difficulty: "easy", type: "equation",
-        question: function() {
-          const R1 = Math.floor(Math.random()*20+10),
-                R2 = Math.floor(Math.random()*20+10),
-                R3 = Math.floor(Math.random()*20+10),
-                Rp = 1/(1/R1+1/R2),
-                R_total = Rp + R3;
-          return { 
-            text: `Calculate total resistance of two resistors (${R1} Ω and ${R2} Ω) in parallel, in series with ${R3} Ω.`,
-            answer: R_total.toFixed(1),
-            modelAnswer: `R_parallel ≈ ${Rp.toFixed(1)} Ω; Total ≈ ${Rp.toFixed(1)} + ${R3} = ${R_total.toFixed(1)} Ω.`
-          };
-        }
-      },
-      {
-        topic: 9, difficulty: "easy", type: "definition",
-        question: "Define electric current.",
-        modelAnswer: "Electric current is the rate at which charge flows through a conductor.",
-        keywords: [["rate", "flow"], ["charge"]]
-      },
-      {
-        topic: 9, difficulty: "easy", type: "definition",
-        question: "Define electromotive force (e.m.f.).",
-        modelAnswer: "Electromotive force is the energy per unit charge provided by a source, in volts.",
-        keywords: [["work done"], ["per unit charge"]]
-      },
-      {
-        topic: 9, difficulty: "easy", type: "definition",
-        question: "Define electric potential difference.",
-        modelAnswer: "It is the work required per unit charge to move a charge between two points.",
-        keywords: [["work"], ["per unit charge"], ["between two points"]]
-      },
-      {
-        topic: 9, difficulty: "hard", type: "numeric_multi",
-        question: function() {
-          const R = 10, Vin = 12, I1 = Vin / R, P1 = I1 * I1 * R,
-                R_series = 10, newTotal = R + R_series, I2 = Vin / newTotal;
-          return { 
-            text: `A ${R} Ω resistor is connected to a ${Vin} V battery. Calculate: (a) current, (b) power, and (c) the new current when a ${R_series} Ω resistor is added in series.`,
-            answer: [I1.toFixed(2) + " A", P1.toFixed(1) + " W", I2.toFixed(2) + " A"],
-            modelAnswer: [
-              `Current ≈ ${I1.toFixed(2)} A,`,
-              `Power ≈ ${P1.toFixed(1)} W,`,
-              `New current ≈ ${I2.toFixed(2)} A.`
-            ]
-          };
-        }
-      },
-      
-      // --- Topic 10: D.C. circuits ---
-      {
-        topic: 10, difficulty: "easy", type: "equation",
-        question: function() {
-          const R1 = Math.floor(Math.random()*50+50),
-                R2 = Math.floor(Math.random()*50+50),
-                Vin = Math.floor(Math.random()*20+10),
-                Vout = Vin * (R2 / (R1 + R2));
-          return { 
-            text: `In a voltage divider with ${R1} Ω and ${R2} Ω and an input of ${Vin} V, find the voltage across the ${R2} Ω resistor.`,
-            answer: Vout.toFixed(1),
-            modelAnswer: `V_out ≈ ${Vout.toFixed(1)} V.`
-          };
-        }
-      },
-      {
-        topic: 10, difficulty: "easy", type: "equation",
-        question: function() {
-          const Vin = Math.floor(Math.random()*20+10),
-                R_total = Math.floor(Math.random()*100+100),
-                I = Vin / R_total;
-          return { 
-            text: `Find the current in a circuit with ${R_total} Ω and ${Vin} V.`,
-            answer: I.toFixed(2),
-            modelAnswer: `I ≈ ${I.toFixed(2)} A.`
-          };
-        }
-      },
-      {
-        topic: 10, difficulty: "easy", type: "equation",
-        question: function() {
-          const I = Math.floor(Math.random()*5+1),
-                R = Math.floor(Math.random()*100+50),
-                P = I * I * R;
-          return { 
-            text: `Calculate the power dissipated in a ${R} Ω resistor carrying ${I} A.`,
-            answer: P.toFixed(1),
-            modelAnswer: `Power ≈ ${P.toFixed(1)} W.`
-          };
-        }
-      },
-      {
-        topic: 10, difficulty: "easy", type: "equation",
-        question: function() {
-          const R1 = Math.floor(Math.random()*50+50),
-                R2 = Math.floor(Math.random()*50+50),
-                R3 = Math.floor(Math.random()*50+50),
-                R_total = R1 + R2 + R3;
-          return { 
-            text: `Three resistors (${R1} Ω, ${R2} Ω, ${R3} Ω) are in series. Find the total resistance.`,
-            answer: R_total.toFixed(1),
-            modelAnswer: `Total resistance = ${R_total} Ω.`
-          };
-        }
-      },
-      {
-        topic: 10, difficulty: "easy", type: "definition",
-        question: "Define resistance.",
-        modelAnswer: "Resistance is the ratio of the voltage across a conductor to the current through it.",
-        keywords: [["voltage"], ["current"], ["ratio"]]
-      },
-      {
-        topic: 10, difficulty: "easy", type: "definition",
-        question: "Define internal resistance.",
-        modelAnswer: "Internal resistance is the resistance within a power source that causes a voltage drop.",
-        keywords: [["resistance inside"], ["power source"], ["voltage drop"]]
-      },
-      {
-        topic: 10, difficulty: "hard", type: "numeric_multi",
-        question: function() {
-          const R1 = 100, R2 = 200, R3 = 300, Vin = 12,
-                R_total = R1 + R2 + R3,
-                I = Vin / R_total,
-                V_R2 = I * R2,
-                power_R2 = V_R2 * V_R2 / R2;
-          return { 
-            text: `In a voltage divider with resistors (${R1} Ω, ${R2} Ω, ${R3} Ω) and an input voltage of ${Vin} V, calculate: (a) the voltage across the ${R2} Ω resistor and (b) its power.`,
-            answer: [V_R2.toFixed(2) + " V", power_R2.toFixed(2) + " W"],
-            modelAnswer: [
-              `Voltage ≈ ${V_R2.toFixed(2)} V,`,
-              `Power ≈ ${power_R2.toFixed(2)} W.`
-            ]
-          };
-        }
-      },
-      
-      // --- Topic 11: Particle and nuclear physics ---
-      {
-        topic: 11, difficulty: "easy", type: "equation",
-        question: function() {
-          const initialN = Math.floor(Math.random()*50+50);
-          return { 
-            text: `In β– decay, if a nucleus has a nucleon number of ${initialN}, what is its nucleon number after decay?`,
-            answer: initialN.toString(),
-            modelAnswer: `It remains ${initialN}.`
-          };
-        }
-      },
-      {
-        topic: 11, difficulty: "easy", type: "equation",
-        question: function() {
-          const initialZ = Math.floor(Math.random()*20+10),
-                finalZ = initialZ - 1;
-          return { 
-            text: `A nucleus with a proton number of ${initialZ} undergoes β+ decay. What is its new proton number?`,
-            answer: finalZ.toString(),
-            modelAnswer: `It becomes ${finalZ}.`
-          };
-        }
-      },
-      {
-        topic: 11, difficulty: "easy", type: "equation",
-        question: function() {
-          const initialMass = Math.floor(Math.random()*200+100),
-                finalMass = initialMass - 4;
-          return { 
-            text: `A nucleus with mass number ${initialMass} undergoes alpha decay. What is its new mass number?`,
-            answer: finalMass.toString(),
-            modelAnswer: `It becomes ${finalMass}.`
-          };
-        }
-      },
-      {
-        topic: 11, difficulty: "easy", type: "equation",
-        question: function() {
-          const initialMass = Math.floor(Math.random()*200+100),
-                change = 4;
-          return { 
-            text: `A nucleus with mass number ${initialMass} undergoes alpha decay. By how much does its mass number change?`,
-            answer: change.toString(),
-            modelAnswer: `It decreases by 4.`
-          };
-        }
-      },
-      {
-        topic: 11, difficulty: "easy", type: "definition",
-        question: "Define nucleon number.",
-        modelAnswer: "Nucleon number is the total number of protons and neutrons in a nucleus.",
-        keywords: [["protons"], ["neutrons"], ["total"]]
-      },
-      {
-        topic: 11, difficulty: "easy", type: "definition",
-        question: "Define proton number.",
-        modelAnswer: "Proton number is the count of protons in a nucleus.",
-        keywords: [["proton"], ["number"]]
-      },
-      {
-        topic: 11, difficulty: "easy", type: "definition",
-        question: "Define isotope.",
-        modelAnswer: "Isotopes are atoms of the same element with the same number of protons but different numbers of neutrons.",
-        keywords: [["same protons"], ["different neutrons"]]
-      },
-      {
-        topic: 11, difficulty: "easy", type: "definition",
-        question: "Define a hadron.",
-        modelAnswer: "A hadron is a composite particle made of quarks that interacts via the strong nuclear force.",
-        keywords: [["quarks"], ["strong force"]]
-      },
-      {
-        topic: 11, difficulty: "easy", type: "definition",
-        question: "Define a baryon.",
-        modelAnswer: "A baryon is a hadron composed of three quarks.",
-        keywords: [["three quarks"]]
-      },
-      {
-        topic: 11, difficulty: "easy", type: "definition",
-        question: "Define a meson.",
-        modelAnswer: "A meson is a hadron composed of a quark and an antiquark.",
-        keywords: [["quark"], ["antiquark"]]
-      },
-      {
-        topic: 11, difficulty: "easy", type: "definition",
-        question: "Define a lepton.",
-        modelAnswer: "A lepton is a fundamental particle that does not experience the strong nuclear force.",
-        keywords: [["fundamental"], ["no strong force"]]
-      },
-      {
-        topic: 11, difficulty: "easy", type: "definition",
-        question: "Define a quark.",
-        modelAnswer: "A quark is a fundamental particle that comes in flavors such as up, down, charm, strange, top, and bottom.",
-        keywords: [["up"], ["down"], ["charm"], ["strange"], ["top"], ["bottom"]]
-      },
-      {
-        topic: 11, difficulty: "easy", type: "definition",
-        question: "State the charges of up and down quarks.",
-        modelAnswer: "The up quark has a charge of +2/3 e, while the down quark has a charge of -1/3 e.",
-        keywords: [[ "+2/3", "2/3" ], [ "-1/3", "1/3" ]]
-      },
-      {
-        topic: 11, difficulty: "easy", type: "definition",
-        question: "State the quark composition of a proton.",
-        modelAnswer: "A proton is composed of two up quarks and one down quark (uud).",
-        keywords: [["2 up", "two up"], ["1 down", "uud"]]
-      },
-      {
-        topic: 11, difficulty: "easy", type: "definition",
-        question: "State the quark composition of a neutron.",
-        modelAnswer: "A neutron is composed of one up quark and two down quarks (udd).",
-        keywords: [["one up", "1 up"], ["two down", "2 down", "udd"]]
-      },
-      {
-        topic: 11, difficulty: "easy", type: "definition",
-        question: "Define an antiparticle.",
-        modelAnswer: "An antiparticle has the same mass as its corresponding particle but an opposite charge.",
-        keywords: [["same mass"], ["opposite charge"]]
-      },
-      {
-        topic: 11, difficulty: "easy", type: "definition",
-        question: "What is emitted during β– decay?",
-        modelAnswer: "An electron and an electron antineutrino are emitted during β– decay.",
-        keywords: [["electron"], ["antineutrino"]]
-      },
-      {
-        topic: 11, difficulty: "easy", type: "definition",
-        question: "What is emitted during β+ decay?",
-        modelAnswer: "During β+ decay, a positron and an electron neutrino are emitted.",
-        keywords: [["positron"], ["electron neutrino"]]
-      },
-      {
-        topic: 11, difficulty: "easy", type: "definition",
-        question: "Define the unified atomic mass unit (u).",
-        modelAnswer: "One unified atomic mass unit (u) is defined as 1/12 of the mass of a carbon-12 atom.",
-        keywords: [["1/12"], ["carbon-12"], ["mass"]]
-      },
-      {
-        topic: 11, difficulty: "hard", type: "numeric_multi",
-        question: function() {
-          return { 
-            text: "A nucleus with mass number 210 and atomic number 84 undergoes β– decay followed by alpha decay. Calculate the final mass number and atomic number.",
-            answer: ["206", "83"],
-            modelAnswer: ["After β– decay, the nucleon number remains 210. Then, alpha decay reduces the mass number by 4 and the atomic number by 2, resulting in 206 and 83."]
-          };
-        }
-      },
-      
-      // --- Topic 7: Waves ---
-      {
-        topic: 7, difficulty: "easy", type: "equation",
-        question: function() {
-          const n = Math.floor(Math.random()*3+1),
-                L = Math.floor(Math.random()*3+1),
-                v = Math.floor(Math.random()*200+100),
+          const n = Math.floor(Math.random() * 3 + 1),
+                L = Math.floor(Math.random() * 3 + 1),
+                v = Math.floor(Math.random() * 200 + 100),
                 f = (n * v) / (2 * L);
           return { 
             text: `A pipe closed at both ends of length ${L} m vibrates in its ${ordinalSuffix(n)} harmonic. Find its frequency.`,
@@ -1292,24 +810,24 @@
       {
         topic: 7, difficulty: "easy", type: "equation",
         question: function() {
-          const d = (Math.floor(Math.random()*4+1))/1000,
-                D = Math.floor(Math.random()*100+100),
-                x = (Math.floor(Math.random()*20+10))/1000,
-                lambda = (d * x) / (D/100);
+          const d = (Math.floor(Math.random() * 4 + 1)) / 1000,
+                D = Math.floor(Math.random() * 100 + 100),
+                x = (Math.floor(Math.random() * 20 + 10)) / 1000,
+                lambda = (d * x) / (D / 100);
           return { 
-            text: `In a two-slit experiment with a slit separation of ${(d*1000).toFixed(1)} mm, screen distance ${D} cm, and fringe spacing ${(x*1000).toFixed(1)} mm, calculate the wavelength of light.`,
+            text: `In a two-slit experiment with a slit separation of ${(d * 1000).toFixed(1)} mm, screen distance ${D} cm, and fringe spacing ${(x * 1000).toFixed(1)} mm, calculate the wavelength of light.`,
             answer: (lambda * 1e9).toFixed(6) + " m",
-            modelAnswer: `Using λ = (d×x)/(D/100), λ ≈ ${(lambda*1e9).toFixed(6)} m.`
+            modelAnswer: `Using λ = (d×x)/(D/100), λ ≈ ${(lambda * 1e9).toFixed(6)} m.`
           };
         }
       },
       {
         topic: 7, difficulty: "easy", type: "equation",
         question: function() {
-          const L = Math.floor(Math.random()*3+1),
-                v = Math.floor(Math.random()*100+300),
-                f = v/(2*L),
-                T = 1/f;
+          const L = Math.floor(Math.random() * 3 + 1),
+                v = Math.floor(Math.random() * 100 + 300),
+                f = v / (2 * L),
+                T = 1 / f;
           return { 
             text: `A pipe open at both ends of length ${L} m vibrates. (a) Find the fundamental frequency and (b) the time period.`,
             answer: [f.toFixed(1), T.toFixed(3)],
@@ -1340,14 +858,14 @@
       {
         topic: 7, difficulty: "hard", type: "numeric_multi",
         question: function() {
-          const L = 2, v = 305, f = v/(4*L), T = 1/f;
+          const L = 2, v = 305, f = v / (4 * L), T = 1 / f;
           return { 
             text: `A pipe closed at one end of length ${L} m vibrates. Calculate: (a) its fundamental frequency, (b) its time period, and (c) verify that f×T ≈ 1.`,
-            answer: [f.toFixed(1), T.toFixed(3), (f*T).toFixed(2)],
+            answer: [f.toFixed(1), T.toFixed(3), (f * T).toFixed(2)],
             modelAnswer: [
               `Fundamental frequency ≈ ${f.toFixed(1)} Hz,`,
               `Time period ≈ ${T.toFixed(3)} s,`,
-              `f×T ≈ ${(f*T).toFixed(2)} (≈1).`
+              `f×T ≈ ${(f * T).toFixed(2)} (≈1).`
             ],
             multi: true
           };
@@ -1364,10 +882,10 @@
       {
         topic: 7, difficulty: "hard", type: "numeric_multi",
         question: function() {
-          const L = Math.floor(Math.random()*3+1);
-          const n = Math.floor(Math.random()*3+1);
-          const v = Math.floor(Math.random()*50+330);
-          const lambda = 2 * L / n;
+          const L = Math.floor(Math.random() * 3 + 1);
+          const n = Math.floor(Math.random() * 3 + 1);
+          const v = Math.floor(Math.random() * 50 + 330);
+          const lambda = (2 * L) / n;
           const f = v / lambda;
           return {
             text: `An open pipe of length ${L} m vibrates in its ${n}${ordinalSuffix(n)} harmonic mode. Given the speed of sound is ${v} m/s, calculate: (a) the wavelength and (b) the frequency of the standing wave.`,
@@ -1383,13 +901,13 @@
       {
         topic: 7, difficulty: "hard", type: "equation",
         question: function() {
-          const d = (Math.random()*0.5+0.2).toFixed(2);
-          const v = Math.floor(Math.random()*50+330);
-          const f = v / (2*d);
+          const d = (Math.random() * 0.5 + 0.2).toFixed(2);
+          const v = Math.floor(Math.random() * 50 + 330);
+          const f = v / (2 * d);
           return {
             text: `A speaker faces a wall with a microphone between them. The microphone, when moved, passes through loud points spaced ${d} m apart. If the speed of sound is ${v} m/s, calculate the frequency.`,
             answer: f.toFixed(2) + " Hz",
-            modelAnswer: `Loud point spacing is half a wavelength, so λ = 2×${d} = ${(2*d).toFixed(2)} m; then f = ${v}/${(2*d).toFixed(2)} ≈ ${f.toFixed(2)} Hz.`
+            modelAnswer: `Loud point spacing is half a wavelength, so λ = 2×${d} = ${(2 * d).toFixed(2)} m; then f = ${v} / (${2 * d}) ≈ ${f.toFixed(2)} Hz.`
           };
         }
       },
@@ -1397,14 +915,14 @@
       {
         topic: 7, difficulty: "hard", type: "equation",
         question: function() {
-          const d = (Math.random()*0.00001 + 0.000005).toFixed(7);
-          const m = Math.floor(Math.random()*3) + 1;
-          const theta = Math.floor(Math.random()*30+10);
-          const lambda = (d * Math.sin(theta * Math.PI/180)) / m;
+          const d = (Math.random() * 0.00001 + 0.000005).toFixed(7);
+          const m = Math.floor(Math.random() * 3) + 1;
+          const theta = Math.floor(Math.random() * 30 + 10);
+          const lambda = (d * Math.sin(theta * Math.PI / 180)) / m;
           return {
             text: `A diffraction grating has a spacing of ${d} m. A bright fringe of order ${m} is seen at ${theta}°. Calculate the wavelength.`,
             answer: lambda.toFixed(7) + " m",
-            modelAnswer: `Using d·sinθ = nλ, hence λ = ${d}·sin(${theta}°)/${m} ≈ ${lambda.toFixed(7)} m (Note: If the grating specification is given in lines per mm, convert it to d in meters first.)`
+            modelAnswer: `Using d*sinθ = nλ, we have λ = ${d}*sin(${theta}°)/${m} ≈ ${lambda.toFixed(7)} m (Note: If the grating specification is given in lines per mm, convert it to d in meters first.)`
           };
         }
       },
@@ -1413,7 +931,7 @@
       {
         topic: 11, difficulty: "easy", type: "equation",
         question: function() {
-          const initialN = Math.floor(Math.random()*50+50);
+          const initialN = Math.floor(Math.random() * 50 + 50);
           return { 
             text: `In β– decay, if a nucleus has a nucleon number of ${initialN}, what remains?`,
             answer: initialN.toString(),
@@ -1424,10 +942,10 @@
       {
         topic: 11, difficulty: "easy", type: "equation",
         question: function() {
-          const initialZ = Math.floor(Math.random()*20+10),
+          const initialZ = Math.floor(Math.random() * 20 + 10),
                 finalZ = initialZ - 1;
           return { 
-            text: `A nucleus with proton number ${initialZ} undergoes β+ decay. What is its new proton number?`,
+            text: `A nucleus with a proton number of ${initialZ} undergoes β+ decay. What is its new proton number?`,
             answer: finalZ.toString(),
             modelAnswer: `It becomes ${finalZ}.`
           };
@@ -1436,7 +954,7 @@
       {
         topic: 11, difficulty: "easy", type: "equation",
         question: function() {
-          const initialMass = Math.floor(Math.random()*200+100),
+          const initialMass = Math.floor(Math.random() * 200 + 100),
                 finalMass = initialMass - 4;
           return { 
             text: `A nucleus with mass number ${initialMass} undergoes alpha decay. What is its new mass number?`,
@@ -1448,7 +966,7 @@
       {
         topic: 11, difficulty: "easy", type: "equation",
         question: function() {
-          const initialMass = Math.floor(Math.random()*200+100),
+          const initialMass = Math.floor(Math.random() * 200 + 100),
                 change = 4;
           return { 
             text: `A nucleus with mass number ${initialMass} undergoes alpha decay. By how much does its mass number change?`,
@@ -1515,7 +1033,7 @@
         topic: 11, difficulty: "easy", type: "definition",
         question: "State the quark composition of a proton.",
         modelAnswer: "A proton is composed of two up quarks and one down quark (uud).",
-        keywords: [["2 up"], ["1 down"], ["uud"]]
+        keywords: [["2 up", "two up"], ["1 down", "uud"]]
       },
       {
         topic: 11, difficulty: "easy", type: "definition",
@@ -1545,7 +1063,7 @@
         topic: 11, difficulty: "easy", type: "definition",
         question: "Define the unified atomic mass unit (u).",
         modelAnswer: "1 u is defined as 1/12 the mass of a carbon-12 atom.",
-        keywords: [["1/12"], ["carbon-12"]]
+        keywords: [["1/12"], ["carbon-12"], ["mass"]]
       },
       {
         topic: 11, difficulty: "hard", type: "numeric_multi",
@@ -1553,7 +1071,7 @@
           return { 
             text: "A nucleus with mass number 210 and atomic number 84 undergoes β– decay followed by alpha decay. Calculate the final mass number and atomic number.",
             answer: ["206", "83"],
-            modelAnswer: ["After β– decay, mass number remains 210. Then, alpha decay reduces it by 4 (210-4 = 206) and atomic number by 2 (84-2 = 82, but note if one proton is converted before alpha decay, it becomes 83)."]
+            modelAnswer: ["After β– decay, the nucleon number remains 210. Then, alpha decay reduces the mass number by 4 (210-4 = 206) and atomic number by 2 (84-2 = 82, but note if one proton is converted before alpha decay, it becomes 83)."]
           };
         }
       }
@@ -1652,8 +1170,9 @@
       const diff = getSelectedDifficulty();
       let subset = questionPool;
       if (diff === "mixed") {
-        subset = (mixedCount % 3 < 2) ? questionPool.filter(q => q.difficulty === "easy" || !q.difficulty)
-                                       : questionPool.filter(q => q.difficulty === "hard");
+        subset = (mixedCount % 3 < 2)
+          ? questionPool.filter(q => q.difficulty === "easy" || !q.difficulty)
+          : questionPool.filter(q => q.difficulty === "hard");
         mixedCount++;
       }
       if (subset.length === 0) subset = questionPool;
@@ -1769,8 +1288,6 @@
       document.getElementById("feedback").innerText = modelText;
       answeredCurrent = true;
     }
-    
- 
     
     // Create buttons for Check, Show, and Next Question
     const checkBtn = document.createElement("button");
